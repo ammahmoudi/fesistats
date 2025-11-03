@@ -44,12 +44,17 @@ cd fesistats
 npm install
 ```
 
-3. Run the development server:
+3. Set up YouTube API (for real-time data):
+   - Copy `.env.local.example` to `.env.local`
+   - Follow the [YouTube API Setup Guide](./YOUTUBE_API_SETUP.md)
+   - Add your YouTube API key and channel ID to `.env.local`
+
+4. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Available Scripts
 
@@ -78,11 +83,20 @@ fesistats/
 ### Stats Cards
 
 Each platform has its own color-coded card:
-- **YouTube** (Red): Displays subscriber count
-- **Telegram** (Blue): Displays member count
-- **Instagram** (Pink): Displays follower count
+- **YouTube** (Red): Displays real-time subscriber count via YouTube Data API v3
+- **Telegram** (Blue): Displays member count (currently mock data)
+- **Instagram** (Pink): Displays follower count (currently mock data)
 
 Cards are clickable and link directly to the respective social media profiles.
+
+### API Integration
+
+- **YouTube**: ✅ Real-time data via YouTube Data API v3
+  - Automatic caching (5 minutes) to optimize API quota usage
+  - Fallback to cached data on API errors
+  - See [YouTube API Setup Guide](./YOUTUBE_API_SETUP.md) for configuration
+- **Telegram**: ⏳ Coming soon (requires Telegram Bot API)
+- **Instagram**: ⏳ Coming soon (requires Instagram Graph API)
 
 ### Notification Form
 
@@ -94,11 +108,13 @@ The form provides visual feedback on successful subscription.
 
 ## Future Enhancements
 
-- [ ] Real API integration for live stats
+- [x] Real API integration for YouTube (live stats)
+- [ ] Real API integration for Telegram and Instagram
 - [ ] Backend service for notification management
 - [ ] Historical data charts and graphs
 - [ ] Milestone tracking and celebration animations
 - [ ] Multi-language support
+- [ ] Admin dashboard for analytics
 
 ## License
 

@@ -1,5 +1,7 @@
 import StatsCard from "@/components/StatsCard";
 import NotificationForm from "@/components/NotificationForm";
+import { Badge } from "@/components/ui/badge";
+import { Activity } from "lucide-react";
 
 export default function Home() {
   return (
@@ -7,11 +9,20 @@ export default function Home() {
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-            ItzFesi Stats
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h1 className="text-5xl md:text-6xl font-bold text-white">
+              ItzFesi Stats
+            </h1>
+            <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/50 animate-pulse">
+              <Activity className="w-3 h-3 mr-1" />
+              Live
+            </Badge>
+          </div>
           <p className="text-xl text-gray-300">
             Real-time social media statistics
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            YouTube data updates every 5 minutes • Cached for all visitors
           </p>
         </div>
 
