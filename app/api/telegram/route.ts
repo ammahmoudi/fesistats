@@ -22,12 +22,18 @@ async function getChannelMembersFromPublicPage(username: string): Promise<number
     const cleanUsername = username.replace('@', '');
     const url = `https://t.me/${cleanUsername}`;
     
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
+      signal: controller.signal,
       next: { revalidate: 300 } // Cache for 5 minutes
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       console.error('Failed to fetch Telegram page:', response.status);
@@ -56,7 +62,13 @@ async function getChannelMembersFromPublicPage(username: string): Promise<number
     return null;
 
   } catch (error) {
-    console.error('Error fetching Telegram public page:', error);
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        console.error('Telegram API timeout - request took too long');
+      } else {
+        console.error('Error fetching Telegram public page:', error.message);
+      }
+    }
     return null;
   }
 }

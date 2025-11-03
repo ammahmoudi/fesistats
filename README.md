@@ -9,9 +9,9 @@ A modern, responsive web application that displays real-time social media statis
 - 📊 **Real-time Stats Display**: 
   - ✅ **YouTube** (LIVE): Real-time subscriber counts via YouTube Data API v3
   - ✅ **Telegram** (LIVE): Real-time member counts from public channel page
-  - 🔄 **Instagram**: Coming soon
+  - ⚙️ **Instagram** (MANUAL): Manual follower count updates (Instagram blocks automated scraping)
   
-- 🔄 **Auto-Refresh**: Live data updates every 5 minutes automatically
+- 🔄 **Auto-Refresh**: Live data updates every 5 minutes automatically (YouTube & Telegram)
 - 🔃 **Manual Refresh**: Click refresh button for instant updates
 - ⚡ **Server-Side Caching**: Optimized API usage with 5-minute cache shared across all users
 
@@ -54,7 +54,8 @@ npm install
 
 3. Set up APIs (for real-time data):
    - **YouTube**: Follow [YouTube API Setup Guide](./YOUTUBE_API_SETUP.md) to get API key
-   - **Telegram**: Follow [Telegram API Setup Guide](./TELEGRAM_API_SETUP.md) - just add channel username, no bot needed!
+   - **Telegram**: Follow [Instagram API Setup Guide](./TELEGRAM_API_SETUP.md) - just add channel username!
+   - **Instagram**: Follow [Instagram API Setup Guide](./INSTAGRAM_API_SETUP.md) - just add username! (simplest setup)
 
 4. Run the development server:
 ```bash
@@ -92,11 +93,11 @@ fesistats/
 Each platform has its own color-coded card:
 - **YouTube** (Red): ✅ Real-time subscriber count via YouTube Data API v3
 - **Telegram** (Blue): ✅ Real-time member count from public channel page
-- **Instagram** (Pink): 🔄 Coming soon (follower count)
+- **Instagram** (Pink): ⚙️ Manual follower count (updated periodically)
 
 Cards feature:
 - **LIVE/DEMO Badges**: Indicates data source
-- **Auto-Refresh**: Updates every 5 minutes automatically
+- **Auto-Refresh**: Updates every 5 minutes automatically (live data)
 - **Manual Refresh**: Click refresh button for instant updates
 - **Loading States**: Skeleton animations during data fetch
 - **Error Handling**: Graceful fallback with user-friendly messages
@@ -117,7 +118,13 @@ Cards feature:
   - Exact member counts, not rounded
   - See [Telegram API Setup Guide](./TELEGRAM_API_SETUP.md)
   
-- **Instagram**: ⏳ Coming soon (requires Instagram Graph API)
+- **Instagram**: ✅ Real-time data via Instagram internal API
+  - Works with any public Instagram account
+  - No API keys or authentication needed
+  - Just add username to `.env.local`
+  - Fallback to Graph API or manual count available
+  - Exact follower counts, not rounded
+  - See [Instagram API Setup Guide](./INSTAGRAM_API_SETUP.md)
 
 ### Notification Form
 

@@ -76,13 +76,30 @@ export default function StatsCard({
         setCount(data.membersCount);
         setIsLiveData(true);
         setLastUpdated(new Date(data.lastUpdated).toLocaleTimeString());
+      } else if (platform === "Instagram") {
+        // Fetch real Instagram data from API route
+        const response = await fetch('/api/instagram');
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Instagram API Error:', errorData);
+          setError(errorData.message || 'Failed to fetch data');
+          // Fall back to mock data on error
+          setCount(78000);
+          setIsLiveData(false);
+          setLoading(false);
+          return;
+        }
+        
+        const data = await response.json();
+        setCount(data.followersCount);
+        // Check if it's manual or live data
+        setIsLiveData(data.source !== 'manual');
+        setLastUpdated(new Date(data.lastUpdated).toLocaleTimeString());
       } else {
-        // Mock data for Instagram - replace with real API call later
+        // Fallback for any other platforms
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        const mockCounts: Record<string, number> = {
-          Instagram: 78000,
-        };
-        setCount(mockCounts[platform] || 0);
+        setCount(0);
         setIsLiveData(false);
         setLastUpdated(new Date().toLocaleTimeString());
       }
@@ -108,7 +125,7 @@ export default function StatsCard({
     
     // Auto-refresh every 5 minutes for live data
     const interval = setInterval(() => {
-      if ((platform === "YouTube" || platform === "Telegram") && isLiveData) {
+      if ((platform === "YouTube" || platform === "Telegram" || platform === "Instagram") && isLiveData) {
         fetchStats();
       }
     }, 5 * 60 * 1000); // 5 minutes

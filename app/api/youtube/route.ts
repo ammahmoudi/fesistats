@@ -29,9 +29,15 @@ export async function GET() {
 
     const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`;
     
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    
     const response = await fetch(url, {
+      signal: controller.signal,
       next: { revalidate: 300 } // Cache for 5 minutes
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -65,7 +71,19 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('Error fetching YouTube stats:', error);
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        console.error('YouTube API timeout - request took too long');
+        return NextResponse.json(
+          { 
+            error: 'Request timeout',
+            message: 'YouTube API request timed out. Check your internet connection or try again later.'
+          },
+          { status: 504 }
+        );
+      }
+      console.error('Error fetching YouTube stats:', error.message);
+    }
     return NextResponse.json(
       { 
         error: 'Internal server error',

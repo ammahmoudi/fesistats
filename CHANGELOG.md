@@ -1,5 +1,102 @@
 # Changelog
 
+## Version 2.2.0 - Instagram Live Data Feature
+
+### 🎉 New Features
+
+#### Real-Time Instagram Data Integration
+- **Instagram Internal API**: Uses Instagram's own web_profile_info endpoint
+- **Simple Setup**: Just add username - no API keys or authentication!
+- **Universal**: Works for any public Instagram account (no Business account needed)
+- **Server-side API Route**: `/api/instagram` with 5-minute caching
+- **Same UX**: Live badge, auto-refresh, manual refresh like YouTube & Telegram
+- **Exact Follower Counts**: Shows exact numbers, not rounded
+
+#### Three-Tier Fallback System
+1. **Instagram Internal API** (Primary - Simple & Fast)
+   - Requires only `INSTAGRAM_USERNAME`
+   - Works for any public account
+   - No authentication needed
+
+2. **Instagram Graph API** (Secondary - Official)
+   - Optional for guaranteed reliability
+   - Requires Business account + tokens
+   - 60-day token expiration
+
+3. **Manual Count** (Fallback - Always Works)
+   - Set `INSTAGRAM_FOLLOWER_COUNT`
+   - Update manually when needed
+
+#### Technical Implementation
+- Uses Instagram's `i.instagram.com/api/v1/users/web_profile_info/` endpoint
+- Special headers mimic Instagram's mobile app
+- Multiple fallback methods for reliability
+- 5-minute server-side caching (route segment config)
+- Graceful error handling between methods
+- Same error handling and UX as YouTube & Telegram
+
+### 📝 Files Added/Modified
+```
+app/api/instagram/route.ts        # Three-tier Instagram API implementation
+INSTAGRAM_API_SETUP.md            # Comprehensive setup guide with all methods
+.env.local.example                # Added INSTAGRAM_USERNAME (primary method)
+README.md                         # Updated with Instagram status
+CHANGELOG.md                      # This file
+```
+
+### 🔧 Configuration (Priority Order)
+
+**Recommended** (Simplest):
+```env
+INSTAGRAM_USERNAME=itz.fesi
+```
+
+**Optional** (Official API):
+```env
+INSTAGRAM_ACCESS_TOKEN=EAAxxxxx
+INSTAGRAM_ACCOUNT_ID=17841xxxxx
+```
+
+**Fallback** (Manual):
+```env
+INSTAGRAM_FOLLOWER_COUNT=78000
+```
+
+### 🎨 Visual Updates
+- Instagram card now shows "LIVE" badge
+- Auto-refresh every 5 minutes
+- Manual refresh with toast notifications
+- Loading states and error handling
+- Exact follower count display
+- Source indicator in API response
+
+### 🚀 Performance
+- Primary method: No rate limits (residential IPs)
+- Graph API: 200 calls/hour (we use 12/hour)
+- 5-minute server caching
+- Shared cache across all users
+- Minimal bandwidth usage
+
+### 📖 Documentation
+- Created comprehensive `INSTAGRAM_API_SETUP.md`
+- Documents all three methods with pros/cons
+- Troubleshooting guide
+- Migration path from Graph API
+- Stack Overflow references for future updates
+
+### 🎯 Current Status
+- ✅ **YouTube**: Live with YouTube Data API v3
+- ✅ **Telegram**: Live with public page scraping
+- ✅ **Instagram**: Live with internal API (+ Graph API + manual fallbacks)
+
+### 🔄 Migration Notes
+If you were using manual count before:
+1. Just add `INSTAGRAM_USERNAME=itz.fesi` to `.env.local`
+2. Remove or keep `INSTAGRAM_FOLLOWER_COUNT` as fallback
+3. Restart server - that's it!
+
+---
+
 ## Version 2.1.0 - Telegram Live Data Feature
 
 ### 🎉 New Features
