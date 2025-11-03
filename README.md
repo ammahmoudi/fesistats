@@ -6,14 +6,22 @@ A modern, responsive web application that displays real-time social media statis
 
 ## Features
 
-- 📊 **Real-time Stats Display**: Shows subscriber/follower counts for:
-  - YouTube: [@itzfesi](https://www.youtube.com/@itzfesi)
-  - Telegram: [@ItzFesi](https://t.me/ItzFesi)
-  - Instagram: [@itz.fesi](https://www.instagram.com/itz.fesi/)
+- 📊 **Real-time Stats Display**: 
+  - ✅ **YouTube** (LIVE): Real-time subscriber counts via YouTube Data API v3
+  - ✅ **Telegram** (LIVE): Real-time member counts from public channel page
+  - 🔄 **Instagram**: Coming soon
+  
+- 🔄 **Auto-Refresh**: Live data updates every 5 minutes automatically
+- 🔃 **Manual Refresh**: Click refresh button for instant updates
+- ⚡ **Server-Side Caching**: Optimized API usage with 5-minute cache shared across all users
 
 - 🔔 **Notification Subscription**: Users can subscribe with email and phone number to get notified when ItzFesi reaches new milestones
 
-- 🎨 **Modern UI**: Beautiful gradient design with smooth animations and hover effects
+- 🎨 **Modern UI**: 
+  - Beautiful gradient design with smooth animations
+  - LIVE/DEMO badges for data source indication
+  - Loading states and error handling
+  - Toast notifications for user feedback
 
 - 📱 **Fully Responsive**: Works seamlessly on desktop, tablet, and mobile devices
 
@@ -44,10 +52,9 @@ cd fesistats
 npm install
 ```
 
-3. Set up YouTube API (for real-time data):
-   - Copy `.env.local.example` to `.env.local`
-   - Follow the [YouTube API Setup Guide](./YOUTUBE_API_SETUP.md)
-   - Add your YouTube API key and channel ID to `.env.local`
+3. Set up APIs (for real-time data):
+   - **YouTube**: Follow [YouTube API Setup Guide](./YOUTUBE_API_SETUP.md) to get API key
+   - **Telegram**: Follow [Telegram API Setup Guide](./TELEGRAM_API_SETUP.md) - just add channel username, no bot needed!
 
 4. Run the development server:
 ```bash
@@ -83,19 +90,33 @@ fesistats/
 ### Stats Cards
 
 Each platform has its own color-coded card:
-- **YouTube** (Red): Displays real-time subscriber count via YouTube Data API v3
-- **Telegram** (Blue): Displays member count (currently mock data)
-- **Instagram** (Pink): Displays follower count (currently mock data)
+- **YouTube** (Red): ✅ Real-time subscriber count via YouTube Data API v3
+- **Telegram** (Blue): ✅ Real-time member count from public channel page
+- **Instagram** (Pink): 🔄 Coming soon (follower count)
 
-Cards are clickable and link directly to the respective social media profiles.
+Cards feature:
+- **LIVE/DEMO Badges**: Indicates data source
+- **Auto-Refresh**: Updates every 5 minutes automatically
+- **Manual Refresh**: Click refresh button for instant updates
+- **Loading States**: Skeleton animations during data fetch
+- **Error Handling**: Graceful fallback with user-friendly messages
+- **Clickable Links**: Direct links to social media profiles
 
 ### API Integration
 
 - **YouTube**: ✅ Real-time data via YouTube Data API v3
-  - Automatic caching (5 minutes) to optimize API quota usage
-  - Fallback to cached data on API errors
-  - See [YouTube API Setup Guide](./YOUTUBE_API_SETUP.md) for configuration
-- **Telegram**: ⏳ Coming soon (requires Telegram Bot API)
+  - Server-side caching (5 minutes) to optimize API quota
+  - ~288 API calls/day (well under 10,000 free quota)
+  - Exact subscriber counts, not rounded
+  - See [YouTube API Setup Guide](./YOUTUBE_API_SETUP.md)
+  
+- **Telegram**: ✅ Real-time data via public page scraping
+  - No bot setup required for public channels
+  - No rate limits or API quotas
+  - Simple one-line configuration
+  - Exact member counts, not rounded
+  - See [Telegram API Setup Guide](./TELEGRAM_API_SETUP.md)
+  
 - **Instagram**: ⏳ Coming soon (requires Instagram Graph API)
 
 ### Notification Form
@@ -109,7 +130,8 @@ The form provides visual feedback on successful subscription.
 ## Future Enhancements
 
 - [x] Real API integration for YouTube (live stats)
-- [ ] Real API integration for Telegram and Instagram
+- [x] Real API integration for Telegram (live stats for groups)
+- [ ] Real API integration for Instagram
 - [ ] Backend service for notification management
 - [ ] Historical data charts and graphs
 - [ ] Milestone tracking and celebration animations

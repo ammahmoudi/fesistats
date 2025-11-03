@@ -1,4 +1,61 @@
-# Changelog - YouTube Live Data Integration
+# Changelog
+
+## Version 2.1.0 - Telegram Live Data Feature
+
+### 🎉 New Features
+
+#### Real-Time Telegram Data Integration
+- **Public Channel Scraping**: Fetches member counts from public Telegram pages
+- **No Bot Required**: Simple setup with just channel username
+- **Server-side API Route**: `/api/telegram` with 5-minute caching
+- **Same UX as YouTube**: Live badge, auto-refresh, manual refresh
+- **Exact Member Counts**: Shows exact numbers, not rounded
+
+#### Simplified Setup
+- Removed Bot API requirement (was limited for public channels)
+- Only needs `TELEGRAM_CHANNEL_USERNAME` in `.env.local`
+- No bot token, no admin access needed
+- Works with any public Telegram channel
+
+#### Technical Implementation
+- HTML parsing from `t.me/{username}` public page
+- Multiple extraction patterns for reliability
+- 5-minute server-side caching (route segment config)
+- Graceful fallback to mock data on errors
+- Same error handling and UX as YouTube
+
+### 📝 Files Modified
+```
+app/api/telegram/route.ts          # Switched from Bot API to public scraping
+components/StatsCard.tsx           # Added Telegram live data support
+TELEGRAM_API_SETUP.md              # Complete rewrite for simpler approach
+.env.local.example                 # Removed TELEGRAM_BOT_TOKEN requirement
+```
+
+### 🔧 Configuration Changes
+- **Removed**: `TELEGRAM_BOT_TOKEN` (no longer needed)
+- **Required**: `TELEGRAM_CHANNEL_USERNAME=ItzFesi`
+- **Channel**: Must be public with username
+
+### 🎨 Visual Updates
+- Telegram card now shows "LIVE" badge
+- Auto-refresh every 5 minutes
+- Manual refresh with toast notifications
+- Loading states and error handling
+- Exact member count display
+
+### 🚀 Performance
+- No rate limits (public page access)
+- 5-minute server caching
+- Shared cache across all users
+- Minimal bandwidth usage
+
+### 📖 Documentation
+- Updated `TELEGRAM_API_SETUP.md` with simpler instructions
+- Updated `.env.local.example`
+- Clearer setup guide (no complex bot setup)
+
+---
 
 ## Version 2.0.0 - YouTube Live Data Feature
 

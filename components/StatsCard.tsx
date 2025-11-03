@@ -57,11 +57,29 @@ export default function StatsCard({
         setCount(data.subscriberCount);
         setIsLiveData(true);
         setLastUpdated(new Date(data.lastUpdated).toLocaleTimeString());
+      } else if (platform === "Telegram") {
+        // Fetch real Telegram data from API route
+        const response = await fetch('/api/telegram');
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Telegram API Error:', errorData);
+          setError(errorData.message || 'Failed to fetch data');
+          // Fall back to mock data on error
+          setCount(45000);
+          setIsLiveData(false);
+          setLoading(false);
+          return;
+        }
+        
+        const data = await response.json();
+        setCount(data.membersCount);
+        setIsLiveData(true);
+        setLastUpdated(new Date(data.lastUpdated).toLocaleTimeString());
       } else {
-        // Mock data for other platforms - replace with real API calls later
+        // Mock data for Instagram - replace with real API call later
         await new Promise((resolve) => setTimeout(resolve, 1000));
         const mockCounts: Record<string, number> = {
-          Telegram: 45000,
           Instagram: 78000,
         };
         setCount(mockCounts[platform] || 0);
@@ -90,7 +108,7 @@ export default function StatsCard({
     
     // Auto-refresh every 5 minutes for live data
     const interval = setInterval(() => {
-      if (platform === "YouTube" && isLiveData) {
+      if ((platform === "YouTube" || platform === "Telegram") && isLiveData) {
         fetchStats();
       }
     }, 5 * 60 * 1000); // 5 minutes
@@ -170,7 +188,7 @@ export default function StatsCard({
               </Badge>
               
               {/* Refresh Button */}
-              {platform === "YouTube" && !loading && (
+              {(platform === "YouTube" || platform === "Telegram") && !loading && (
                 <Button
                   variant="ghost"
                   size="sm"

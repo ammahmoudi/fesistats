@@ -22,7 +22,7 @@ export default function Home() {
             Real-time social media statistics
           </p>
           <p className="text-sm text-gray-400 mt-2">
-            YouTube data updates every 5 minutes • Cached for all visitors
+            YouTube & Telegram data updates every 5 minutes • Cached for all visitors
           </p>
         </div>
 
