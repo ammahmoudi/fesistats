@@ -19,10 +19,7 @@ export default function Home() {
             </Badge>
           </div>
           <p className="text-xl text-gray-300">
-            Real-time social media statistics
-          </p>
-          <p className="text-sm text-gray-400 mt-2">
-            Live data updates every 5 minutes • Cached for all visitors
+            Follow Fesi across social media
           </p>
         </div>
 
