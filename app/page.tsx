@@ -32,7 +32,7 @@ export default function Home() {
             platform="YouTube"
             username="@itzfesi"
             url="https://www.youtube.com/@itzfesi"
-            icon="🎥"
+            icon="youtube"
             color="red"
             metric="Subscribers"
           />
@@ -40,7 +40,7 @@ export default function Home() {
             platform="Telegram"
             username="@ItzFesi"
             url="https://t.me/ItzFesi"
-            icon="✈️"
+            icon="telegram"
             color="blue"
             metric="Members"
           />
@@ -48,7 +48,7 @@ export default function Home() {
             platform="Instagram"
             username="@itz.fesi"
             url="https://www.instagram.com/itz.fesi/"
-            icon="📷"
+            icon="instagram"
             color="pink"
             metric="Followers"
           />

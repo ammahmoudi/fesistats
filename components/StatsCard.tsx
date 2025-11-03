@@ -7,15 +7,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
+import { FaYoutube, FaTelegram, FaInstagram } from "react-icons/fa";
 
 interface StatsCardProps {
   platform: string;
   username: string;
   url: string;
-  icon: string;
+  icon: "youtube" | "telegram" | "instagram";
   color: "red" | "blue" | "pink";
   metric: string;
 }
+
+const iconMap = {
+  youtube: FaYoutube,
+  telegram: FaTelegram,
+  instagram: FaInstagram,
+};
 
 export default function StatsCard({
   platform,
@@ -31,6 +38,8 @@ export default function StatsCard({
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  const Icon = iconMap[icon];
 
   const fetchStats = async () => {
     setLoading(true);
@@ -167,21 +176,6 @@ export default function StatsCard({
       className="block group"
     >
       <Card className={`bg-gradient-to-br ${colorClasses[color]} border-2 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden`}>
-        {/* Live Indicator Badge */}
-        <div className="absolute top-3 right-3 z-10">
-          {isLiveData ? (
-            <Badge variant="secondary" className="bg-green-500/90 text-white border-green-400 flex items-center gap-1 animate-pulse">
-              <Wifi className="w-3 h-3" />
-              LIVE
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/30 flex items-center gap-1">
-              <WifiOff className="w-3 h-3" />
-              DEMO
-            </Badge>
-          )}
-        </div>
-
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex-1">
@@ -193,16 +187,33 @@ export default function StatsCard({
                 {username}
               </CardDescription>
             </div>
-            <div className="text-4xl">{icon}</div>
+            <div className="text-white">
+              <Icon className="w-12 h-12" />
+            </div>
           </div>
         </CardHeader>
         
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30 border-white/30">
-                {metric}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30 border-white/30">
+                  {metric}
+                </Badge>
+                
+                {/* Live Indicator Badge */}
+                {isLiveData ? (
+                  <Badge variant="secondary" className="bg-green-500/90 text-white border-green-400 flex items-center gap-1 animate-pulse">
+                    <Wifi className="w-3 h-3" />
+                    LIVE
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30 flex items-center gap-1">
+                    <WifiOff className="w-3 h-3" />
+                    DEMO
+                  </Badge>
+                )}
+              </div>
               
               {/* Refresh Button */}
               {(platform === "YouTube" || platform === "Telegram") && !loading && (
