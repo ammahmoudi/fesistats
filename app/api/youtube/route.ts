@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic'; // Disable caching for real-time data
+// Cache configuration - revalidate every 5 minutes
+export const revalidate = 300; // 5 minutes in seconds
 
 interface YouTubeChannelResponse {
   items: Array<{
@@ -12,8 +13,11 @@ interface YouTubeChannelResponse {
   }>;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get('refresh') === 'true';
+    
     const apiKey = process.env.YOUTUBE_API_KEY;
     const channelId = process.env.YOUTUBE_CHANNEL_ID;
 
@@ -32,9 +36,13 @@ export async function GET() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
     
+    console.log(`Fetching YouTube data...${forceRefresh ? ' (forced refresh)' : ''}`);
+    
     const response = await fetch(url, {
       signal: controller.signal,
-      next: { revalidate: 300 } // Cache for 5 minutes
+      // If forceRefresh, bypass cache; otherwise use 5-minute cache
+      cache: forceRefresh ? 'no-store' : 'default',
+      next: forceRefresh ? { revalidate: 0 } : { revalidate: 300 }
     });
 
     clearTimeout(timeoutId);

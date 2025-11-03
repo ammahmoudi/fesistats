@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 
 // Cache configuration - revalidate every 5 minutes
 export const revalidate = 300; // 5 minutes in seconds
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
 
 /**
  * Fetch follower count using Instagram's internal API endpoint
@@ -12,7 +10,7 @@ export const fetchCache = 'force-no-store';
  * Endpoint: https://i.instagram.com/api/v1/users/web_profile_info/?username={username}
  * Requires specific headers to bypass security checks
  */
-async function getFollowersFromInstagram(username: string): Promise<number | null> {
+async function getFollowersFromInstagram(username: string, forceRefresh: boolean = false): Promise<number | null> {
   try {
     const url = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
     
@@ -34,7 +32,9 @@ async function getFollowersFromInstagram(username: string): Promise<number | nul
         'X-IG-App-ID': '936619743392459',
       },
       signal: controller.signal,
-      next: { revalidate: 300 }, // Cache for 5 minutes
+      // If forceRefresh, bypass cache; otherwise use 5-minute cache
+      cache: forceRefresh ? 'no-store' : 'default',
+      next: forceRefresh ? { revalidate: 0 } : { revalidate: 300 },
     });
 
     clearTimeout(timeoutId);
@@ -72,12 +72,14 @@ async function getFollowersFromInstagram(username: string): Promise<number | nul
  * Fetch follower count using Instagram Graph API (Official method)
  * Requires Instagram Business/Creator account and Facebook App
  */
-async function getFollowersFromGraphAPI(accessToken: string, instagramAccountId: string): Promise<number | null> {
+async function getFollowersFromGraphAPI(accessToken: string, instagramAccountId: string, forceRefresh: boolean = false): Promise<number | null> {
   try {
     const url = `https://graph.instagram.com/${instagramAccountId}?fields=followers_count,username&access_token=${accessToken}`;
     
     const response = await fetch(url, {
-      next: { revalidate: 300 },
+      // If forceRefresh, bypass cache; otherwise use 5-minute cache
+      cache: forceRefresh ? 'no-store' : 'default',
+      next: forceRefresh ? { revalidate: 0 } : { revalidate: 300 },
     });
 
     if (!response.ok) {
@@ -100,17 +102,19 @@ async function getFollowersFromGraphAPI(accessToken: string, instagramAccountId:
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get('refresh') === 'true';
+    
     const username = process.env.INSTAGRAM_USERNAME;
     const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
     const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
-    const manualCount = process.env.INSTAGRAM_FOLLOWER_COUNT;
 
     // Priority 1: Try Instagram internal API (simple, works for any public account)
     if (username) {
-      console.log(`Fetching Instagram data for @${username} via internal API...`);
-      const followersCount = await getFollowersFromInstagram(username);
+      console.log(`Fetching Instagram data for @${username} via internal API...${forceRefresh ? ' (forced refresh)' : ''}`);
+      const followersCount = await getFollowersFromInstagram(username, forceRefresh);
       
       if (followersCount !== null) {
         return NextResponse.json({
@@ -126,7 +130,7 @@ export async function GET() {
     // Priority 2: Try Graph API if configured (official but requires setup)
     if (accessToken && accountId) {
       console.log(`Trying Instagram Graph API...`);
-      const followersCount = await getFollowersFromGraphAPI(accessToken, accountId);
+      const followersCount = await getFollowersFromGraphAPI(accessToken, accountId, forceRefresh);
       
       if (followersCount !== null) {
         return NextResponse.json({
@@ -136,25 +140,14 @@ export async function GET() {
         });
       }
       
-      console.warn('Instagram Graph API failed, trying manual count...');
+      console.warn('Instagram Graph API failed.');
     }
 
-    // Priority 3: Use manual count as fallback
-    if (manualCount) {
-      const count = parseInt(manualCount, 10);
-      console.log(`Using manual Instagram count: ${count.toLocaleString()}`);
-      return NextResponse.json({
-        followersCount: count,
-        lastUpdated: new Date().toISOString(),
-        source: 'manual',
-      });
-    }
-
-    // No methods available
+    // No methods available or all failed
     return NextResponse.json(
       { 
-        error: 'Instagram not configured',
-        message: 'Please set INSTAGRAM_USERNAME in .env.local for automatic updates, or INSTAGRAM_FOLLOWER_COUNT for manual updates.'
+        error: 'Instagram data unavailable',
+        message: 'Unable to fetch Instagram data. Please check your configuration or try again later.'
       },
       { status: 500 }
     );

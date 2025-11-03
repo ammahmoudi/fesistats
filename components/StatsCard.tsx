@@ -38,91 +38,51 @@ export default function StatsCard({
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
+  const REFRESH_COOLDOWN = 30000; // 30 seconds cooldown
 
   const Icon = iconMap[icon];
 
-  const fetchStats = async () => {
+  const fetchStats = async (forceRefresh: boolean = false) => {
     setLoading(true);
     setError(null);
     
     try {
+      let endpoint = '';
+      let dataKey = '';
+      
       if (platform === "YouTube") {
-        // Fetch real YouTube data from API route
-        // Server handles caching (5 min), so multiple users get cached data
-        const response = await fetch('/api/youtube');
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('YouTube API Error:', errorData);
-          setError(errorData.message || 'Failed to fetch data');
-          // Fall back to mock data on error
-          setCount(125000);
-          setIsLiveData(false);
-          setLoading(false);
-          return;
-        }
-        
-        const data = await response.json();
-        setCount(data.subscriberCount);
-        setIsLiveData(true);
-        setLastUpdated(new Date(data.lastUpdated).toLocaleTimeString());
+        endpoint = '/api/youtube';
+        dataKey = 'subscriberCount';
       } else if (platform === "Telegram") {
-        // Fetch real Telegram data from API route
-        const response = await fetch('/api/telegram');
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Telegram API Error:', errorData);
-          setError(errorData.message || 'Failed to fetch data');
-          // Fall back to mock data on error
-          setCount(45000);
-          setIsLiveData(false);
-          setLoading(false);
-          return;
-        }
-        
-        const data = await response.json();
-        setCount(data.membersCount);
-        setIsLiveData(true);
-        setLastUpdated(new Date(data.lastUpdated).toLocaleTimeString());
+        endpoint = '/api/telegram';
+        dataKey = 'membersCount';
       } else if (platform === "Instagram") {
-        // Fetch real Instagram data from API route
-        const response = await fetch('/api/instagram');
+        endpoint = '/api/instagram';
+        dataKey = 'followersCount';
+      }
+      
+      if (endpoint) {
+        // Add refresh parameter if force refresh is requested
+        const url = forceRefresh ? `${endpoint}?refresh=true` : endpoint;
+        const response = await fetch(url);
         
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('Instagram API Error:', errorData);
+          console.error(`${platform} API Error:`, errorData);
           setError(errorData.message || 'Failed to fetch data');
-          // Fall back to mock data on error
-          setCount(78000);
-          setIsLiveData(false);
           setLoading(false);
           return;
         }
         
         const data = await response.json();
-        setCount(data.followersCount);
-        // Check if it's manual or live data
-        setIsLiveData(data.source !== 'manual');
+        setCount(data[dataKey]);
+        setIsLiveData(true); // All server data is considered live (either real-time or cached)
         setLastUpdated(new Date(data.lastUpdated).toLocaleTimeString());
-      } else {
-        // Fallback for any other platforms
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setCount(0);
-        setIsLiveData(false);
-        setLastUpdated(new Date().toLocaleTimeString());
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
       setError('Network error');
-      // Fall back to mock data on error
-      const fallbackCounts: Record<string, number> = {
-        YouTube: 125000,
-        Telegram: 45000,
-        Instagram: 78000,
-      };
-      setCount(fallbackCounts[platform] || 0);
-      setIsLiveData(false);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -132,19 +92,32 @@ export default function StatsCard({
   useEffect(() => {
     fetchStats();
     
-    // Auto-refresh every 5 minutes for live data
+    // Auto-refresh every 5 minutes
     const interval = setInterval(() => {
-      if ((platform === "YouTube" || platform === "Telegram" || platform === "Instagram") && isLiveData) {
-        fetchStats();
-      }
+      fetchStats();
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
   }, [platform]);
 
   const handleRefresh = async () => {
+    // Check cooldown - prevent spam clicking
+    const now = Date.now();
+    const timeSinceLastRefresh = now - lastRefreshTime;
+    
+    if (timeSinceLastRefresh < REFRESH_COOLDOWN) {
+      const remainingSeconds = Math.ceil((REFRESH_COOLDOWN - timeSinceLastRefresh) / 1000);
+      toast.warning('Please wait', {
+        description: `You can refresh again in ${remainingSeconds} seconds`,
+      });
+      return;
+    }
+    
     setRefreshing(true);
-    await fetchStats();
+    setLastRefreshTime(now);
+    
+    // Force refresh: bypass cache and get fresh data from APIs
+    await fetchStats(true);
     
     if (isLiveData && !error) {
       toast.success(`${platform} data refreshed`, {
@@ -201,22 +174,15 @@ export default function StatsCard({
                   {metric}
                 </Badge>
                 
-                {/* Live Indicator Badge */}
-                {isLiveData ? (
-                  <Badge variant="secondary" className="bg-green-500/90 text-white border-green-400 flex items-center gap-1 animate-pulse">
-                    <Wifi className="w-3 h-3" />
-                    LIVE
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30 flex items-center gap-1">
-                    <WifiOff className="w-3 h-3" />
-                    DEMO
-                  </Badge>
-                )}
+                {/* Live Indicator Badge - Always show as LIVE since server data is cached */}
+                <Badge variant="secondary" className="bg-green-500/90 text-white border-green-400 flex items-center gap-1 animate-pulse">
+                  <Wifi className="w-3 h-3" />
+                  LIVE
+                </Badge>
               </div>
               
               {/* Refresh Button */}
-              {(platform === "YouTube" || platform === "Telegram") && !loading && (
+              {!loading && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -225,7 +191,8 @@ export default function StatsCard({
                     handleRefresh();
                   }}
                   disabled={refreshing}
-                  className="h-7 w-7 p-0 text-white hover:bg-white/20"
+                  className="h-7 w-7 p-0 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={refreshing ? "Refreshing..." : "Force refresh data"}
                 >
                   <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                 </Button>
@@ -241,11 +208,11 @@ export default function StatsCard({
                 </p>
                 
                 {/* Last Updated / Error Message */}
-                <div className="min-h-[20px]">
+                <div className="min-h-5">
                   {error ? (
                     <p className="text-xs text-red-200 flex items-center gap-1">
                       <WifiOff className="w-3 h-3" />
-                      {error} • Using demo data
+                      {error} • Please try refreshing
                     </p>
                   ) : lastUpdated ? (
                     <p className="text-xs text-white/60">

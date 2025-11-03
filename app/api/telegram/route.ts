@@ -16,7 +16,7 @@ interface TelegramChatResponse {
   description?: string;
 }
 
-async function getChannelMembersFromPublicPage(username: string): Promise<number | null> {
+async function getChannelMembersFromPublicPage(username: string, forceRefresh: boolean = false): Promise<number | null> {
   try {
     // Fetch the public channel page
     const cleanUsername = username.replace('@', '');
@@ -30,7 +30,9 @@ async function getChannelMembersFromPublicPage(username: string): Promise<number
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
       signal: controller.signal,
-      next: { revalidate: 300 } // Cache for 5 minutes
+      // If forceRefresh, bypass cache; otherwise use 5-minute cache
+      cache: forceRefresh ? 'no-store' : 'default',
+      next: forceRefresh ? { revalidate: 0 } : { revalidate: 300 }
     });
 
     clearTimeout(timeoutId);
@@ -73,8 +75,11 @@ async function getChannelMembersFromPublicPage(username: string): Promise<number
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get('refresh') === 'true';
+    
     const channelUsername = process.env.TELEGRAM_CHANNEL_USERNAME;
 
     if (!channelUsername) {
@@ -87,8 +92,10 @@ export async function GET() {
       );
     }
 
+    console.log(`Fetching Telegram data...${forceRefresh ? ' (forced refresh)' : ''}`);
+
     // For public channels, scrape the public page
-    const membersCount = await getChannelMembersFromPublicPage(channelUsername);
+    const membersCount = await getChannelMembersFromPublicPage(channelUsername, forceRefresh);
 
     if (membersCount === null) {
       return NextResponse.json(
