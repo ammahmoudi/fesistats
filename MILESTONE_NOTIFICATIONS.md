@@ -44,7 +44,32 @@ Returns:
 }
 ```
 
-## 🔔 Notification Flow
+## � Admin UI
+
+### Milestone Management Page
+**URL:** `https://fesistats.vercel.app/admin/milestones`
+
+**Features:**
+- **Current Stats**: View real-time follower/subscriber counts for all platforms
+- **Manual Check**: "Check Milestones Now" button to trigger immediate milestone detection
+- **Check Results**: View latest check results including:
+  - Platforms checked
+  - Milestones detected
+  - Notifications sent
+  - Delivery statistics
+- **System Info**: Explanation of automated schedule and detection thresholds
+
+**Access:** Requires admin login via `/admin` with `ADMIN_BROADCAST_TOKEN`
+
+### How to Use Admin UI
+
+1. **Login**: Visit `/admin` and enter your admin token
+2. **Navigate**: Click "🏆 Milestones" button in dashboard header
+3. **View Stats**: See current platform counts at top of page
+4. **Manual Check**: Click "Check Milestones Now" to trigger immediate check
+5. **View Results**: See check results, notifications sent, and delivery stats
+
+## �🔔 Notification Flow
 
 1. **Cron triggers** `/api/check-milestones` every 6 hours
 2. **Fetches current counts** from YouTube, Telegram, Instagram APIs

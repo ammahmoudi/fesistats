@@ -1,5 +1,160 @@
 # Changelog
 
+## Version 3.0.0 - Admin Panel, Automated Milestones & Redis Migration
+
+### 🚀 Major Features
+
+#### Admin Dashboard System
+- **Admin Authentication**: Secure login with `ADMIN_BROADCAST_TOKEN`
+- **Admin Dashboard** (`/admin/dashboard`): 
+  - View total subscriber count
+  - Send broadcast notifications
+  - Platform selection (YouTube/Telegram/Instagram)
+  - Real-time delivery reports
+- **Milestone Management** (`/admin/milestones`):
+  - View current platform stats
+  - Manual milestone check button
+  - Notification delivery stats
+- **Session-based Auth**: Token stored in `sessionStorage`, cleared on logout
+
+#### Automated Milestone Notifications
+- **Smart Detection**: Milestones at 1K-10K (every 1K), 15K-50K (every 5K), major milestones to 10M
+- **Vercel Cron Job**: Automatic checks every 6 hours
+- **Duplicate Prevention**: Redis tracks last notified milestone per platform
+- **Celebration Messages**: Random positive messages for each milestone
+- **Manual Trigger**: Admin can trigger checks via dashboard or API endpoint
+- **Multi-Platform**: Works for YouTube, Telegram, and Instagram
+
+#### Webhook Automation
+- **Auto-Setup Endpoint**: `/api/setup-webhook` auto-detects domain and configures webhook
+- **GitHub Actions**: Automatic webhook configuration after Vercel deployments
+- **Local Script**: `npm run setup-webhook` for manual setup with dotenv loading
+- **Multiple Triggers**: API endpoint, GitHub Actions, or npm command
+
+#### Redis Migration (Upstash)
+- **Persistent Storage**: Migrated from file-based to Upstash Redis for serverless compatibility
+- **SDK Integration**: Using `@upstash/redis` v1.35.6 for type-safe operations
+- **Subscriber Management**: Redis Sets for deduplication and efficient operations
+- **Milestone Tracking**: Separate keys per platform (`milestone:last:{platform}`)
+- **Environment Variables**: Supports both `KV_REST_API_*` and `UPSTASH_REDIS_REST_*`
+
+#### Telegram Bot Enhancements
+- **Command System**: `/start`, `/stop`, `/status` commands
+- **Redis Integration**: Subscribers stored in `telegram:subscribers` Set
+- **Protected Endpoints**: Admin token required for broadcasts and subscriber access
+- **Webhook Security**: Optional `TELEGRAM_WEBHOOK_SECRET` validation
+- **Broadcast Metrics**: Returns detailed delivery stats (total, success, failed)
+
+### 📝 Files Added
+```
+app/admin/page.tsx                    # Admin login page
+app/admin/dashboard/page.tsx          # Admin control panel
+app/admin/milestones/page.tsx         # Milestone management UI
+app/api/check-milestones/route.ts     # Automated milestone checker
+app/api/setup-webhook/route.ts        # Webhook auto-configuration
+app/api/telegram-bot/subscribers/route.ts  # Subscriber diagnostic endpoint
+lib/telegramSubscribers.ts            # Redis subscriber abstraction
+lib/milestones.ts                     # Milestone detection logic
+lib/milestoneStorage.ts               # Milestone Redis storage
+scripts/setup-webhook.ts              # Local webhook setup script
+.github/workflows/setup-webhook.yml   # Post-deployment automation
+ADMIN_ACCESS.md                       # Admin documentation
+WEBHOOK_SETUP.md                      # Webhook setup guide
+MILESTONE_NOTIFICATIONS.md            # Milestone system docs
+```
+
+### 📝 Files Modified
+```
+app/api/telegram-bot/webhook/route.ts # Refactored to use Redis
+app/api/telegram-bot/notify/route.ts  # Added admin auth, Redis integration
+app/notify/page.tsx                   # Redirects to /admin
+vercel.json                           # Added crons configuration
+package.json                          # Added @upstash/redis, dotenv, tsx
+.env.local.example                    # Added Redis and admin variables
+```
+
+### 🔧 New Environment Variables
+```env
+# Redis (Upstash)
+KV_REST_API_URL=https://your-redis.upstash.io
+KV_REST_API_TOKEN=your_redis_token
+
+# Admin Authentication
+ADMIN_BROADCAST_TOKEN=your_secure_admin_token
+
+# Optional Security
+TELEGRAM_WEBHOOK_SECRET=your_webhook_secret
+```
+
+### 🎨 Technical Improvements
+- **Redis Sets**: Native deduplication for subscribers
+- **Lazy Client Init**: Redis client initialized on-demand
+- **Server-side Caching**: 5-minute cache for platform stats
+- **Type Safety**: Full TypeScript types across all new features
+- **Error Boundaries**: Graceful error handling with fallbacks
+- **Protected Routes**: Session validation for admin pages
+
+### 🔒 Security Enhancements
+- Admin endpoints require `x-admin-token` header or query param
+- Session-based admin authentication (not stored in cookies)
+- Optional webhook secret validation
+- Redis credentials never exposed to client
+- Environment variables properly secured
+
+### 🚀 Performance Optimizations
+- Redis operations (SADD, SREM, SMEMBERS, SISMEMBER, SCARD)
+- Shared server-side cache for all users
+- Efficient milestone detection algorithm
+- Minimal API calls with intelligent caching
+
+### 📊 API Endpoints Added
+- `GET /api/check-milestones` - Automated milestone checker (cron)
+- `GET /api/setup-webhook` - Auto-configure Telegram webhook
+- `GET /api/telegram-bot/subscribers` - Admin-only subscriber stats
+- `POST /api/telegram-bot/notify` - Protected broadcast endpoint
+
+### 🎯 Admin Access Flow
+1. Visit `/admin` with admin token
+2. Token validated via test API call
+3. Stored in `sessionStorage`
+4. Redirects to `/admin/dashboard`
+5. Access to broadcast and milestone pages
+
+### ⚙️ Cron Configuration
+```json
+{
+  "crons": [{
+    "path": "/api/check-milestones",
+    "schedule": "0 */6 * * *"
+  }]
+}
+```
+**Note**: Requires Vercel Pro plan. Free tier users can use external cron services.
+
+### 🐛 Bug Fixes
+- Fixed `vercel.json` secret references causing deployment errors
+- Fixed `app/notify/page.tsx` corruption during editing
+- Added dotenv loading for local script execution
+- Resolved Redis client initialization issues
+
+### 📖 Documentation Updates
+- Comprehensive admin access guide
+- Webhook automation documentation
+- Milestone system explanation
+- Updated environment variable examples
+- Added setup instructions for all new features
+
+### 🎉 Current Feature Status
+- ✅ **YouTube**: Live data with YouTube Data API v3
+- ✅ **Telegram**: Live stats + Bot notifications
+- ✅ **Instagram**: Live data with internal API
+- ✅ **Admin Panel**: Full control dashboard
+- ✅ **Automated Milestones**: 6-hour checks
+- ✅ **Webhook Automation**: Post-deployment setup
+- ✅ **Redis Storage**: Production-ready persistence
+
+---
+
 ## Version 2.2.0 - Instagram Live Data Feature
 
 ### 🎉 New Features

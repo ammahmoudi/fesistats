@@ -18,9 +18,21 @@
   - Send broadcast notifications
   - Platform selection (YouTube/Telegram/Instagram)
   - Delivery reports
+  - Access to Milestones page
   - Logout button
 
-### 3. **Public Homepage**
+### 3. **Milestone Management**
+**URL:** `https://fesistats.vercel.app/admin/milestones`
+
+- **Protected:** Requires login via `/admin`
+- **Features:**
+  - View current platform statistics (YouTube/Telegram/Instagram)
+  - Manual milestone check button
+  - View check results and notifications sent
+  - Delivery statistics for each milestone notification
+  - System explanation and automated schedule info
+
+### 4. **Public Homepage**
 **URL:** `https://fesistats.vercel.app/`
 
 - Public stats dashboard
@@ -45,6 +57,13 @@
 - Enter milestone (e.g., "10,000 Subscribers")
 - Write custom message (max 500 chars)
 - Send to all subscribers instantly
+
+### **Milestone Management** (`/admin/milestones`)
+- View current follower/subscriber counts for all platforms
+- Manual "Check Milestones Now" button
+- View milestone check results
+- See notifications sent with delivery stats
+- Monitor automated milestone system
 
 ### **Delivery Reports**
 - Total subscribers reached
