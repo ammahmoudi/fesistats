@@ -1,9 +1,4 @@
 {
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "env": {
-    "TELEGRAM_BOT_TOKEN": "@telegram_bot_token",
-    "TELEGRAM_WEBHOOK_SECRET": "@telegram_webhook_secret",
-    "ADMIN_BROADCAST_TOKEN": "@admin_broadcast_token"
-  }
+  "installCommand": "npm install"
 }
