@@ -113,10 +113,24 @@ export default function MilestonesPage() {
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-semibold mb-2">⚙️ Automated Checking:</h3>
-              <p className="text-sm">
-                Vercel Cron runs every <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30">6 hours</Badge> automatically checking YouTube, Telegram, and Instagram.
-              </p>
+              <h3 className="text-white font-semibold mb-2">⚙️ Automated Checking Methods:</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 shrink-0">Client-Side</Badge>
+                  <span>Homepage checks every <strong className="text-white">2 hours</strong> when users visit</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30 shrink-0">GitHub Actions</Badge>
+                  <span>Automated workflow runs every <strong className="text-white">3 hours</strong></span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30 shrink-0">Vercel Cron</Badge>
+                  <span>Scheduled check runs <strong className="text-white">once daily</strong> (Hobby plan)</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-2 pl-2 border-l-2 border-white/20">
+                  Multiple methods ensure reliable milestone detection even with free tier limitations
+                </p>
+              </div>
             </div>
             <div>
               <h3 className="text-white font-semibold mb-2">🔔 Notifications:</h3>
@@ -239,12 +253,47 @@ export default function MilestonesPage() {
           </CardContent>
         </Card>
 
-        {/* Next Check Info */}
+        {/* Check Schedule Details */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
-          <CardContent className="p-4">
-            <p className="text-sm text-gray-300 text-center">
-              <strong className="text-white">Next automatic check:</strong> Within 6 hours (Vercel Cron)
-            </p>
+          <CardHeader>
+            <CardTitle className="text-xl text-white">⏰ Check Schedule</CardTitle>
+            <CardDescription className="text-gray-300">
+              Multiple automated methods for reliability
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/30">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-white font-medium">🌐 Client-Side Polling</p>
+                <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30">Active</Badge>
+              </div>
+              <p className="text-xs text-gray-300">Checks every 2 hours when users visit homepage</p>
+              <p className="text-xs text-gray-400 mt-1">✓ Works on all Vercel plans • No configuration needed</p>
+            </div>
+
+            <div className="bg-purple-500/10 rounded-lg p-3 border border-purple-500/30">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-white font-medium">⚡ GitHub Actions</p>
+                <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">Every 3 hours</Badge>
+              </div>
+              <p className="text-xs text-gray-300">Automated workflow using GitHub's free tier</p>
+              <p className="text-xs text-gray-400 mt-1">✓ Most reliable method • Runs 8 times per day</p>
+            </div>
+
+            <div className="bg-pink-500/10 rounded-lg p-3 border border-pink-500/30">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-white font-medium">⏰ Vercel Cron</p>
+                <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30">Daily</Badge>
+              </div>
+              <p className="text-xs text-gray-300">Scheduled at midnight (00:00 UTC)</p>
+              <p className="text-xs text-gray-400 mt-1">✓ Backup method • Hobby plan limitation</p>
+            </div>
+
+            <div className="bg-white/5 rounded-lg p-3 border border-white/10 mt-3">
+              <p className="text-xs text-gray-400 text-center">
+                💡 <strong className="text-white">Pro Tip:</strong> The system uses whichever method triggers first, ensuring milestones are caught quickly
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
