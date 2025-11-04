@@ -157,7 +157,7 @@ export default function StatsCard({
       rel="noopener noreferrer"
       className="block group"
     >
-      <Card className={`bg-gradient-to-br ${colorClasses[color]} border-2 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden`}>
+      <Card className={`bg-gradient-to-br ${colorClasses[color]} border-2 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden h-full flex flex-col`}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex-1">
@@ -175,7 +175,7 @@ export default function StatsCard({
           </div>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="flex-1 flex flex-col justify-between">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -218,20 +218,25 @@ export default function StatsCard({
                 
                 {/* YouTube Extra Info */}
                 {platform === "YouTube" && extraInfo && (
-                  <div className="space-y-1 pt-2 border-t border-white/20">
-                    <div className="flex justify-between items-center text-sm">
+                  <div className="space-y-1 pt-2 mt-2 border-t border-white/20">
+                    <div className="flex justify-between items-center text-xs">
                       <span className="text-white/70">👁️ Views:</span>
-                      <span className="text-white font-semibold">
+                      <span className="text-white font-medium">
                         {formatNumber(extraInfo.views || 0)}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-sm">
+                    <div className="flex justify-between items-center text-xs">
                       <span className="text-white/70">🎬 Videos:</span>
-                      <span className="text-white font-semibold">
+                      <span className="text-white font-medium">
                         {formatNumber(extraInfo.videos || 0)}
                       </span>
                     </div>
                   </div>
+                )}
+                
+                {/* Spacer for non-YouTube cards to maintain consistent height */}
+                {platform !== "YouTube" && (
+                  <div className="h-[52px]"></div>
                 )}
                 
                 {/* Last Updated / Error Message */}
