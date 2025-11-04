@@ -1,0 +1,43 @@
+name: Milestone Check (Alternative to Vercel Cron)
+
+# This workflow provides an alternative to Vercel Cron for Hobby plan users
+# Runs every 3 hours to check for new milestones
+# Can be disabled if using other methods (client-side polling, external cron, etc.)
+
+on:
+  schedule:
+    # Run every 3 hours at minute 0
+    # Format: minute hour day month day-of-week
+    - cron: '0 */3 * * *'
+  
+  # Allow manual trigger from Actions tab
+  workflow_dispatch:
+
+jobs:
+  check-milestones:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check Milestones
+        run: |
+          echo "🔍 Checking milestones at $(date)"
+          
+          # Call the milestone check endpoint
+          RESPONSE=$(curl -s -w "\n%{http_code}" https://fesistats.vercel.app/api/check-milestones)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          
+          echo "📊 Response:"
+          echo "$BODY" | jq '.' || echo "$BODY"
+          
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Milestone check completed successfully"
+          else
+            echo "❌ Milestone check failed with status $HTTP_CODE"
+            exit 1
+          fi
+      
+      - name: Check Result
+        if: always()
+        run: |
+          echo "Job completed at $(date)"

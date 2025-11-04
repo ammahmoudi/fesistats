@@ -1,11 +1,15 @@
 import StatsCard from "@/components/StatsCard";
 import NotificationForm from "@/components/NotificationForm";
+import MilestoneChecker from "@/components/MilestoneChecker";
 import { Badge } from "@/components/ui/badge";
 import { Activity } from "lucide-react";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
+      {/* Silent milestone checker (runs in background) */}
+      <MilestoneChecker />
+      
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">

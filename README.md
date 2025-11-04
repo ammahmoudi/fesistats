@@ -22,7 +22,11 @@ A modern, responsive web application that displays real-time social media statis
 
 ### 🎯 Automated Milestone Notifications
 - **Smart Detection**: Automatically detects milestones (1K-10K every 1K, 15K-50K every 5K, major milestones to 10M)
-- **Vercel Cron**: Checks every 6 hours for new milestones
+- **Multiple Check Methods**: 
+  - Client-side polling (enabled by default, works on all Vercel plans)
+  - GitHub Actions (every 3 hours, free)
+  - Vercel Cron (once/day on Hobby, frequent on Pro)
+  - External cron services (optional)
 - **Multi-Platform**: Works for YouTube, Telegram, and Instagram
 - **Duplicate Prevention**: Redis tracks last notified milestone to avoid repeats
 - **Celebration Messages**: Random positive messages for each milestone
