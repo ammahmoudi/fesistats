@@ -6,6 +6,10 @@ import { getLastNotifiedMilestone, setLastNotifiedMilestone } from '@/lib/milest
 interface PlatformStats {
   platform: string;
   count: number;
+  extraInfo?: {
+    views?: number;
+    videos?: number;
+  };
 }
 
 async function sendTelegramBroadcast(message: string): Promise<{ total: number; successful: number; failed: number }> {
@@ -48,17 +52,24 @@ async function fetchPlatformStats(): Promise<PlatformStats[]> {
 
     if (youtubeRes.status === 'fulfilled' && youtubeRes.value.ok) {
       const data = await youtubeRes.value.json();
-      stats.push({ platform: 'YouTube', count: data.subscribers || 0 });
+      stats.push({ 
+        platform: 'YouTube', 
+        count: data.subscriberCount || 0,
+        extraInfo: {
+          views: data.viewCount || 0,
+          videos: data.videoCount || 0
+        }
+      });
     }
 
     if (telegramRes.status === 'fulfilled' && telegramRes.value.ok) {
       const data = await telegramRes.value.json();
-      stats.push({ platform: 'Telegram', count: data.members || 0 });
+      stats.push({ platform: 'Telegram', count: data.membersCount || 0 });
     }
 
     if (instagramRes.status === 'fulfilled' && instagramRes.value.ok) {
       const data = await instagramRes.value.json();
-      stats.push({ platform: 'Instagram', count: data.followers || 0 });
+      stats.push({ platform: 'Instagram', count: data.followersCount || 0 });
     }
 
     return stats;
@@ -82,16 +93,22 @@ export async function GET() {
     
     const stats = await fetchPlatformStats();
     const notifications: Array<{ platform: string; milestone: string; delivered: number }> = [];
-    const currentStats: Array<{ platform: string; count: number; lastNotified: number | null }> = [];
+    const currentStats: Array<{ 
+      platform: string; 
+      count: number; 
+      lastNotified: number | null;
+      extraInfo?: { views?: number; videos?: number };
+    }> = [];
 
-    for (const { platform, count } of stats) {
+    for (const { platform, count, extraInfo } of stats) {
       const lastNotified = await getLastNotifiedMilestone(platform);
       
       // Store current stats
       currentStats.push({
         platform,
         count,
-        lastNotified
+        lastNotified,
+        extraInfo
       });
 
       const milestone = shouldNotifyMilestone(count, lastNotified);

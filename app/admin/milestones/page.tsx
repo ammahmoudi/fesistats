@@ -11,7 +11,12 @@ import { CheckCircle2, Loader2, RefreshCw, TrendingUp, Award } from "lucide-reac
 interface MilestoneCheck {
   success: boolean;
   checked: number;
-  stats?: Array<{ platform: string; count: number; lastNotified: number | null }>;
+  stats?: Array<{ 
+    platform: string; 
+    count: number; 
+    lastNotified: number | null;
+    extraInfo?: { views?: number; videos?: number };
+  }>;
   notifications: Array<{ platform: string; milestone: string; delivered: number }>;
   message: string;
   checkedAt?: string;
@@ -173,7 +178,26 @@ export default function MilestonesPage() {
                             {stat.count.toLocaleString()}
                           </p>
                         </div>
-                        <p className="text-xs text-gray-400">
+                        
+                        {/* YouTube Extra Info */}
+                        {stat.platform === 'YouTube' && stat.extraInfo && (
+                          <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-400">👁️ Total Views:</span>
+                              <span className="text-gray-300 font-medium">
+                                {stat.extraInfo.views?.toLocaleString() || 'N/A'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-gray-400">🎬 Videos:</span>
+                              <span className="text-gray-300 font-medium">
+                                {stat.extraInfo.videos?.toLocaleString() || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <p className="text-xs text-gray-400 mt-2">
                           Last notified: {stat.lastNotified ? stat.lastNotified.toLocaleString() : 'Never'}
                         </p>
                       </div>
