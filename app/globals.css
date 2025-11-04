@@ -127,4 +127,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Font families */
+  html[lang="en"] body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  html[lang="fa"] body {
+    font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+  }
 }

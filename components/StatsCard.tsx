@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { FaYoutube, FaTelegram, FaInstagram } from "react-icons/fa";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface StatsCardProps {
   platform: string;
@@ -41,6 +42,7 @@ export default function StatsCard({
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
   const REFRESH_COOLDOWN = 30000; // 30 seconds cooldown
+  const { t } = useLanguage();
 
   const Icon = iconMap[icon];
 
@@ -160,12 +162,12 @@ export default function StatsCard({
       <Card className={`bg-gradient-to-br ${colorClasses[color]} border-2 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl relative overflow-hidden h-full flex flex-col`}>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
-                {platform}
-                <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div>
+              <CardTitle className="text-2xl font-bold text-white mb-1">
+                {t(platform.toLowerCase() as any)}
               </CardTitle>
-              <CardDescription className="text-white/80 font-medium">
+              <CardDescription className="text-white/80 flex items-center gap-1">
+                <ExternalLink className="w-3 h-3" />
                 {username}
               </CardDescription>
             </div>
@@ -180,10 +182,8 @@ export default function StatsCard({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30 border-white/30">
-                  {metric}
-                </Badge>
-                
-                {/* Live Indicator Badge - Always show as LIVE since server data is cached */}
+                  {platform === "YouTube" ? t('subscribers') : platform === "Telegram" ? t('members') : t('followers')}
+                </Badge>                {/* Live Indicator Badge - Always show as LIVE since server data is cached */}
                 <Badge variant="secondary" className="bg-green-500/90 text-white border-green-400 flex items-center gap-1 animate-pulse">
                   <Wifi className="w-3 h-3" />
                   LIVE
@@ -220,13 +220,13 @@ export default function StatsCard({
                 {platform === "YouTube" && extraInfo && (
                   <div className="space-y-1 pt-2 mt-2 border-t border-white/20">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-white/70">👁️ Views:</span>
+                      <span className="text-white/70">👁️ {t('views')}:</span>
                       <span className="text-white font-medium">
                         {formatNumber(extraInfo.views || 0)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-white/70">🎬 Videos:</span>
+                      <span className="text-white/70">🎬 {t('videos')}:</span>
                       <span className="text-white font-medium">
                         {formatNumber(extraInfo.videos || 0)}
                       </span>

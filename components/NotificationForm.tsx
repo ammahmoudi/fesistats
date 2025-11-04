@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, CheckCircle2, Send } from "lucide-react";
 import { FaTelegram } from "react-icons/fa";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function NotificationForm() {
   const [botUsername, setBotUsername] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Fetch bot username from API
@@ -42,10 +44,10 @@ export default function NotificationForm() {
             </div>
           </div>
           <CardTitle className="text-3xl font-bold text-white">
-            Get Notified via Telegram
+            {t('notificationTitle')}
           </CardTitle>
           <CardDescription className="text-gray-300 text-base">
-            Receive instant notifications when ItzFesi reaches new milestones!
+            {t('notificationDescription')}
           </CardDescription>
         </CardHeader>
 
@@ -71,7 +73,7 @@ export default function NotificationForm() {
             size="lg"
           >
             <FaTelegram className="w-5 h-5 mr-2" />
-            {loading ? "Loading..." : `Connect via Telegram`}
+            {loading ? t('loading') : t('telegramButton')}
             <Send className="w-4 h-4 ml-2" />
           </Button>
 
