@@ -33,6 +33,7 @@ export default function StatsCard({
   metric,
 }: StatsCardProps) {
   const [count, setCount] = useState<number | null>(null);
+  const [extraInfo, setExtraInfo] = useState<{ views?: number; videos?: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLiveData, setIsLiveData] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -79,6 +80,14 @@ export default function StatsCard({
         setCount(data[dataKey]);
         setIsLiveData(true); // All server data is considered live (either real-time or cached)
         setLastUpdated(new Date(data.lastUpdated).toLocaleTimeString());
+        
+        // Store YouTube extra info if available
+        if (platform === "YouTube" && data.viewCount && data.videoCount) {
+          setExtraInfo({
+            views: data.viewCount,
+            videos: data.videoCount
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -206,6 +215,24 @@ export default function StatsCard({
                 <p className="text-4xl font-bold text-white">
                   {count !== null ? formatNumber(count) : "—"}
                 </p>
+                
+                {/* YouTube Extra Info */}
+                {platform === "YouTube" && extraInfo && (
+                  <div className="space-y-1 pt-2 border-t border-white/20">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-white/70">👁️ Views:</span>
+                      <span className="text-white font-semibold">
+                        {formatNumber(extraInfo.views || 0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-white/70">🎬 Videos:</span>
+                      <span className="text-white font-semibold">
+                        {formatNumber(extraInfo.videos || 0)}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Last Updated / Error Message */}
                 <div className="min-h-5">
