@@ -11,8 +11,10 @@ import { CheckCircle2, Loader2, RefreshCw, TrendingUp, Award } from "lucide-reac
 interface MilestoneCheck {
   success: boolean;
   checked: number;
+  stats?: Array<{ platform: string; count: number; lastNotified: number | null }>;
   notifications: Array<{ platform: string; milestone: string; delivered: number }>;
   message: string;
+  checkedAt?: string;
 }
 
 export default function MilestonesPage() {
@@ -146,21 +148,49 @@ export default function MilestonesPage() {
             </Button>
 
             {result && (
-              <div className="mt-6 p-4 rounded-lg border border-white/20 bg-white/5 space-y-3">
-                <h3 className="text-white font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-400" />
-                  Check Results
-                </h3>
+              <div className="mt-6 p-4 rounded-lg border border-white/20 bg-white/5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-semibold flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    Check Results
+                  </h3>
+                  {result.checkedAt && (
+                    <p className="text-xs text-gray-400">
+                      {new Date(result.checkedAt).toLocaleTimeString()}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Current Stats */}
+                {result.stats && result.stats.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-white font-semibold">📊 Current Stats:</p>
+                    {result.stats.map((stat, i) => (
+                      <div key={i} className="bg-white/5 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-white font-medium">{stat.platform}</p>
+                          <p className="text-xl text-pink-300 font-bold">
+                            {stat.count.toLocaleString()}
+                          </p>
+                        </div>
+                        <p className="text-xs text-gray-400">
+                          Last notified: {stat.lastNotified ? stat.lastNotified.toLocaleString() : 'Never'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <p className="text-sm text-gray-300">{result.message}</p>
                 
                 {result.notifications.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm text-white font-semibold">Milestones Detected:</p>
+                    <p className="text-sm text-white font-semibold">🎉 Milestones Detected:</p>
                     {result.notifications.map((notif, i) => (
-                      <div key={i} className="bg-white/5 rounded-lg p-3 flex items-center justify-between">
+                      <div key={i} className="bg-green-500/10 rounded-lg p-3 border border-green-500/30 flex items-center justify-between">
                         <div>
                           <p className="text-white font-medium">{notif.platform}</p>
-                          <p className="text-sm text-gray-400">Milestone: {notif.milestone}</p>
+                          <p className="text-sm text-gray-300">Milestone: {notif.milestone}</p>
                         </div>
                         <Badge className="bg-green-600/20 text-green-300 border-green-500/30">
                           {notif.delivered} notified

@@ -71,16 +71,29 @@ async function fetchPlatformStats(): Promise<PlatformStats[]> {
 /**
  * Check all platforms for new milestones and send notifications
  * GET /api/check-milestones
+ * 
+ * Cache for 5 minutes to prevent excessive checks
  */
+export const revalidate = 300; // 5 minutes cache
+
 export async function GET() {
   try {
     console.log('🔍 Checking for milestones...');
     
     const stats = await fetchPlatformStats();
     const notifications: Array<{ platform: string; milestone: string; delivered: number }> = [];
+    const currentStats: Array<{ platform: string; count: number; lastNotified: number | null }> = [];
 
     for (const { platform, count } of stats) {
       const lastNotified = await getLastNotifiedMilestone(platform);
+      
+      // Store current stats
+      currentStats.push({
+        platform,
+        count,
+        lastNotified
+      });
+
       const milestone = shouldNotifyMilestone(count, lastNotified);
 
       if (milestone) {
@@ -115,10 +128,12 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       checked: stats.length,
+      stats: currentStats,
       notifications,
       message: notifications.length > 0 
         ? `${notifications.length} milestone notification(s) sent`
-        : 'No new milestones detected'
+        : 'No new milestones detected',
+      checkedAt: new Date().toISOString()
     });
 
   } catch (error) {
