@@ -116,14 +116,23 @@ export default function AdminDashboard() {
             </h1>
             <p className="text-gray-300 mt-1">Manage broadcasts and monitor subscribers</p>
           </div>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => router.push('/admin/milestones')}
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              🏆 Milestones
+            </Button>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Stats Card */}
