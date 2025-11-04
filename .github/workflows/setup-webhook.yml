@@ -1,0 +1,29 @@
+# GitHub Action to automatically set Telegram webhook after Vercel deployment
+name: Setup Telegram Webhook
+
+on:
+  # Trigger when Vercel deployment succeeds
+  deployment_status:
+
+jobs:
+  setup-webhook:
+    # Only run on successful production deployments
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'Production'
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Wait for deployment to be ready
+        run: sleep 10
+      
+      - name: Setup webhook
+        run: |
+          RESPONSE=$(curl -s "${{ github.event.deployment_status.target_url }}/api/setup-webhook")
+          echo "Webhook setup response: $RESPONSE"
+          
+          if echo "$RESPONSE" | grep -q '"success":true'; then
+            echo "✅ Webhook configured successfully"
+          else
+            echo "⚠️ Webhook setup may have failed"
+            echo "$RESPONSE"
+          fi
