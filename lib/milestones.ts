@@ -9,6 +9,9 @@ export interface Milestone {
 /**
  * Determine if a count represents a notable milestone
  * Milestones: 1K, 2K, 3K, 4K, 5K, 10K, 15K, 20K, 25K, 50K, 75K, 100K, 250K, 500K, 1M, etc.
+ * 
+ * Returns the highest milestone that has been PASSED (not necessarily exact match)
+ * For example: if count is 7090, it returns milestone 7000
  */
 export function detectMilestone(count: number): Milestone | null {
   if (count < 1000) return null;
@@ -23,10 +26,20 @@ export function detectMilestone(count: number): Milestone | null {
     1000000, 1500000, 2000000, 2500000, 5000000, 10000000
   ];
 
-  if (milestones.includes(count)) {
+  // Find the highest milestone that is less than or equal to current count
+  let lastPassed = null;
+  for (const milestone of milestones) {
+    if (milestone <= count) {
+      lastPassed = milestone;
+    } else {
+      break; // Milestones are in ascending order
+    }
+  }
+
+  if (lastPassed !== null) {
     return {
-      value: count,
-      formatted: formatMilestone(count),
+      value: lastPassed,
+      formatted: formatMilestone(lastPassed),
       platform: ''
     };
   }
