@@ -82,3 +82,30 @@ export function shouldNotifyMilestone(
   
   return null;
 }
+
+/**
+ * Find the highest milestone that has been passed for a given count
+ * Used to initialize milestone tracking for existing counts
+ */
+export function findLastPassedMilestone(count: number): number | null {
+  if (count < 1000) return null;
+
+  const milestones = [
+    1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+    15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000,
+    75000, 100000, 150000, 200000, 250000, 500000, 750000,
+    1000000, 1500000, 2000000, 2500000, 5000000, 10000000
+  ];
+
+  // Find the highest milestone that is less than or equal to current count
+  let lastPassed = null;
+  for (const milestone of milestones) {
+    if (milestone <= count) {
+      lastPassed = milestone;
+    } else {
+      break; // Milestones are in ascending order
+    }
+  }
+
+  return lastPassed;
+}

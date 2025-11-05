@@ -20,17 +20,22 @@ export type { FetchedStats } from './youtube-fetcher';
 import { saveStats } from '../statsStorage';
 import { fetchYouTubeStats } from './youtube-fetcher';
 import { fetchTelegramStats } from './telegram-fetcher';
+import { fetchInstagramStats } from './instagram-fetcher';
 
 /**
  * Fetch all stats and save them to Redis
- * Runs YouTube and Telegram in parallel (Instagram calls internal API to avoid recursion)
+ * Runs all three platforms in parallel
  * 
  * @returns Array of successfully fetched and saved stats
  */
 export async function fetchAndSaveAllStats() {
   console.log('📊 Fetching all platform stats...');
 
-  const results = await Promise.allSettled([fetchYouTubeStats(), fetchTelegramStats()]);
+  const results = await Promise.allSettled([
+    fetchYouTubeStats(), 
+    fetchTelegramStats(),
+    fetchInstagramStats()
+  ]);
 
   const successfulStats = [];
 

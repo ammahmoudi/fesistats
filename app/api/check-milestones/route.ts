@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSubscribers } from '@/lib/telegramSubscribers';
-import { detectMilestone, generateMilestoneMessage, shouldNotifyMilestone } from '@/lib/milestones';
+import { detectMilestone, generateMilestoneMessage, shouldNotifyMilestone, findLastPassedMilestone } from '@/lib/milestones';
 import { getLastNotifiedMilestone, setLastNotifiedMilestone } from '@/lib/milestoneStorage';
 import { fetchAndSaveAllStats, type FetchedStats } from '@/lib/fetchers';
 
@@ -56,7 +56,17 @@ export async function GET() {
 
     for (const { platform, count, extraInfo } of stats) {
       // Stats are already saved by fetchAndSaveAllStats()
-      const lastNotified = await getLastNotifiedMilestone(platform);
+      let lastNotified = await getLastNotifiedMilestone(platform);
+      
+      // Initialize milestone tracking for first time if count is already past milestones
+      if (lastNotified === null) {
+        const lastPassed = findLastPassedMilestone(count);
+        if (lastPassed) {
+          console.log(`📝 Initializing ${platform} milestone tracking: ${lastPassed} (current: ${count})`);
+          await setLastNotifiedMilestone(platform, lastPassed);
+          lastNotified = lastPassed;
+        }
+      }
       
       // Store current stats
       currentStats.push({
