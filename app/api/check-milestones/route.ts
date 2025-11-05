@@ -45,8 +45,8 @@ export async function GET() {
   try {
     console.log('🔍 Checking for milestones and saving stats...');
     
-    // Get the base URL for dashboard link
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://fesistats.vercel.app');
+    // Get the base URL for dashboard link - prioritize custom domain
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir';
     
     const stats = await fetchPlatformStats();
     const notifications: Array<{ platform: string; milestone: string; delivered: number }> = [];

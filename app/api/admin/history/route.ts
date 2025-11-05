@@ -24,13 +24,20 @@ export async function GET(request: Request) {
     }
 
     if (type === 'milestones') {
+      console.log(`📋 Fetching milestone history for all platforms...`);
       const allMilestones = await getAllLastMilestones();
+      console.log(`📊 All milestones:`, allMilestones);
+      
       const history: Record<string, any[]> = {};
 
       for (const [plat, value] of Object.entries(allMilestones)) {
-        history[plat] = await getMilestoneHistory(plat, 50);
+        console.log(`  🔍 Fetching history for ${plat}...`);
+        const platformHistory = await getMilestoneHistory(plat, 50);
+        console.log(`  ✅ Got ${platformHistory.length} records for ${plat}`);
+        history[plat] = platformHistory;
       }
 
+      console.log(`✅ Returning milestone history with ${Object.keys(history).length} platforms`);
       return NextResponse.json({
         success: true,
         type: 'milestones',

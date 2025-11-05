@@ -53,14 +53,38 @@ export default function MilestonesPage() {
   const fetchMilestoneHistory = async (token: string) => {
     try {
       setLoadingHistory(true);
-      const res = await fetch(`/api/admin/history?token=${token}&type=milestones`);
+      console.log(`🔍 Fetching milestone history with token...`);
+      console.log(`📍 Token (first 20 chars): ${token.substring(0, 20)}...`);
+      
+      const url = `/api/admin/history?token=${encodeURIComponent(token)}&type=milestones`;
+      console.log(`🌐 Fetching from: ${url}`);
+      
+      const res = await fetch(url);
+      
+      console.log(`📨 Response status: ${res.status}`);
       
       if (res.ok) {
         const data = await res.json();
-        setMilestonesHistory(data.history || {});
+        console.log(`📊 History API response:`, data);
+        console.log(`📊 History object:`, data.history);
+        console.log(`📊 History keys:`, data.history ? Object.keys(data.history) : 'none');
+        
+        if (data.history && typeof data.history === 'object') {
+          console.log(`✅ Setting history with ${Object.keys(data.history).length} platforms`);
+          setMilestonesHistory(data.history);
+        } else {
+          console.warn(`⚠️  No history data in response, setting empty`);
+          setMilestonesHistory({});
+        }
+      } else {
+        console.error(`❌ Failed to fetch history: ${res.status}`);
+        const errorData = await res.json();
+        console.error(`Error details:`, errorData);
+        setMilestonesHistory({});
       }
     } catch (err) {
       console.error('Error fetching milestone history:', err);
+      setMilestonesHistory({});
     } finally {
       setLoadingHistory(false);
     }
@@ -373,37 +397,47 @@ export default function MilestonesPage() {
           <CardContent>
             <div className="space-y-4">
               {Object.entries(milestonesHistory).length > 0 ? (
-                Object.entries(milestonesHistory).map(([platform, records]) => (
+                Object.entries(milestonesHistory).map(([platform, records]: [string, any]) => {
+                  // Ensure records is an array
+                  const recordsArray = Array.isArray(records) ? records : [];
+                  console.log(`📋 Rendering platform ${platform} with ${recordsArray.length} records`);
+                  
+                  return (
                   <div key={platform} className="bg-white/5 rounded-lg p-4 border border-white/10">
                     <h3 className="text-white font-semibold mb-3 capitalize flex items-center justify-between">
                       {platform}
                       <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">
-                        {records.length} milestone{records.length !== 1 ? 's' : ''}
+                        {recordsArray.length} milestone{recordsArray.length !== 1 ? 's' : ''}
                       </Badge>
                     </h3>
                     <div className="space-y-2">
-                      {records.map((record, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Badge className={record.notified ? 'bg-green-600/20 text-green-300 border-green-500/30' : 'bg-yellow-600/20 text-yellow-300 border-yellow-500/30'}>
-                              {record.notified ? '✓' : '◐'}
-                            </Badge>
-                            <div>
-                              <p className="text-white font-semibold">{formatNumber(record.value)}</p>
-                              <p className="text-xs text-gray-400">{formatDate(record.timestamp)}</p>
+                      {recordsArray.length > 0 ? (
+                        recordsArray.map((record: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Badge className={record.notified ? 'bg-green-600/20 text-green-300 border-green-500/30' : 'bg-yellow-600/20 text-yellow-300 border-yellow-500/30'}>
+                                {record.notified ? '✓' : '◐'}
+                              </Badge>
+                              <div>
+                                <p className="text-white font-semibold">{formatNumber(record.value)}</p>
+                                <p className="text-xs text-gray-400">{formatDate(record.timestamp)}</p>
+                              </div>
                             </div>
+                            <Badge variant="secondary" className="bg-white/10 text-gray-300">
+                              {record.notified ? 'Notified' : 'Pending'}
+                            </Badge>
                           </div>
-                          <Badge variant="secondary" className="bg-white/10 text-gray-300">
-                            {record.notified ? 'Notified' : 'Pending'}
-                          </Badge>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <p className="text-xs text-gray-400">No records for this platform</p>
+                      )}
                     </div>
                   </div>
-                ))
+                  );
+                })
               ) : (
                 <p className="text-gray-400 text-center py-8">
                   {loadingHistory ? t('loading') : t('noMilestonesRecorded')}

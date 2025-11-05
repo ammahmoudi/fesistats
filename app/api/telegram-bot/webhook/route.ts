@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       if (!already) {
         await addSubscriber(chatId);
         const total = await getSubscriberCount();
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://fesistats.vercel.app';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir';
         const bannerUrl = `${appUrl}/main_banner.webp`;
         const caption =
           `🎉 <b>Welcome, ${firstName}!</b>\n\n` +

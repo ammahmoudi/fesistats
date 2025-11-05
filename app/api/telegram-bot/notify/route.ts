@@ -145,10 +145,8 @@ export async function POST(request: Request) {
 
     console.log(`📨 Broadcast request received - Platform: ${platform}, Template: ${template}, Has Image: ${!!imageUrl}`);
 
-    // Get the base URL for image resolution
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : 'https://fesistats.vercel.app';
+    // Get the base URL for image resolution - prioritize custom domain
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir';
 
     let result;
 

@@ -102,18 +102,28 @@ export async function getMilestoneHistory(platform: string, limit: number = 50):
     const platformKey = platform.toLowerCase();
     const historyKey = `${MILESTONE_HISTORY_PREFIX}${platformKey}`;
     
+    console.log(`📋 Fetching milestone history for ${platform} from key: ${historyKey}`);
+    
     const records = await getClient().lrange<string>(historyKey, 0, limit - 1);
     
-    return records
+    console.log(`✅ Got ${records.length} raw records for ${platform}`);
+    
+    const parsed = records
       .map((item: string) => {
         try {
-          return JSON.parse(item);
-        } catch {
+          const parsed = JSON.parse(item);
+          console.log(`  ✓ Parsed: ${JSON.stringify(parsed)}`);
+          return parsed;
+        } catch (e) {
+          console.warn(`  ✗ Failed to parse: ${item}`);
           return null;
         }
       })
       .filter((item: any): item is MilestoneRecord => item !== null)
       .sort((a, b) => b.timestamp - a.timestamp);
+    
+    console.log(`📊 Returning ${parsed.length} milestone records for ${platform}`);
+    return parsed;
   } catch (error) {
     console.error(`Error getting milestone history for ${platform}:`, error);
     return [];
