@@ -3,14 +3,14 @@
 ## 🔐 Admin Pages
 
 ### 1. **Admin Login**
-**URL:** `https://fesistats.vercel.app/admin`
+**URL:** `https://itzfesi.ir/admin`
 
 - Enter your `ADMIN_BROADCAST_TOKEN` to login
 - Token is stored in browser session (cleared on logout/close)
 - Redirects to dashboard on successful login
 
 ### 2. **Admin Dashboard**
-**URL:** `https://fesistats.vercel.app/admin/dashboard`
+**URL:** `https://itzfesi.ir/admin/dashboard`
 
 - **Protected:** Requires login via `/admin`
 - **Features:**
@@ -22,7 +22,7 @@
   - Logout button
 
 ### 3. **Milestone Management**
-**URL:** `https://fesistats.vercel.app/admin/milestones`
+**URL:** `https://itzfesi.ir/admin/milestones`
 
 - **Protected:** Requires login via `/admin`
 - **Features:**
@@ -33,7 +33,7 @@
   - System explanation and automated schedule info
 
 ### 4. **Public Homepage**
-**URL:** `https://fesistats.vercel.app/`
+**URL:** `https://itzfesi.ir/`
 
 - Public stats dashboard
 - Shows live subscriber counts
@@ -41,7 +41,7 @@
 
 ## 🔑 How to Access Admin
 
-1. Visit: `https://fesistats.vercel.app/admin`
+1. Visit: `https://itzfesi.ir/admin`
 2. Enter your `ADMIN_BROADCAST_TOKEN` (from Vercel env vars)
 3. Click "Login"
 4. You'll be redirected to the dashboard
@@ -109,7 +109,7 @@
 
 ### Login to Admin
 ```
-Visit: https://fesistats.vercel.app/admin
+Visit: https://itzfesi.ir/admin
 ```
 
 ### Send Test Broadcast

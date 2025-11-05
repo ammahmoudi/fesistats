@@ -7,7 +7,7 @@ This project includes automatic webhook configuration after deployments.
 ### Option 1: API Endpoint (Recommended)
 After any deployment, simply visit:
 ```
-https://fesistats.vercel.app/api/setup-webhook
+https://itzfesi.ir/api/setup-webhook
 ```
 
 This will:
@@ -47,13 +47,13 @@ Check if webhook is configured:
 Invoke-RestMethod -Uri "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/getWebhookInfo"
 
 # Or visit in browser
-https://fesistats.vercel.app/api/setup-webhook
+https://itzfesi.ir/api/setup-webhook
 ```
 
 ## Troubleshooting
 
 If webhook isn't working:
-1. Visit `https://fesistats.vercel.app/api/setup-webhook`
+1. Visit `https://itzfesi.ir/api/setup-webhook`
 2. Check the response for errors
 3. Verify `TELEGRAM_BOT_TOKEN` is set in Vercel env vars
 4. Send `/start` to your bot to test

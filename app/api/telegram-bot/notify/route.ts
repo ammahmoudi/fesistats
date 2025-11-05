@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       `📱 Platform: <b>${platform}</b>\n` +
       `🎯 Milestone: <b>${milestone}</b>\n\n` +
       `${message}\n\n` +
-      `🔗 Dashboard: https://fesistats.vercel.app`;
+      `🔗 Dashboard: ${process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir'}`;
 
     const result = await broadcastMessage(formattedMessage);
     return NextResponse.json({ success: true, ...result, message: 'Broadcast attempted' });

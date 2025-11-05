@@ -45,7 +45,7 @@ The system supports multiple ways to check for milestones, suitable for differen
 
 #### 4. **External Cron Services** (Advanced)
 - **Services**: cron-job.org, UptimeRobot, EasyCron, etc.
-- **Setup**: Point service to `https://fesistats.vercel.app/api/check-milestones`
+- **Setup**: Point service to `https://itzfesi.ir/api/check-milestones`
 - **Pros**: Most reliable, customizable schedule, uptime monitoring
 - **Cons**: Requires external service setup
 
@@ -112,7 +112,7 @@ Runs every **6 hours** automatically:
 - 6:00 PM UTC
 
 ### Manual Check
-Visit: `https://fesistats.vercel.app/api/check-milestones`
+Visit: `https://itzfesi.ir/api/check-milestones`
 
 Or use admin dashboard at `/admin/milestones`
 
@@ -135,7 +135,7 @@ Returns:
 ## � Admin UI
 
 ### Milestone Management Page
-**URL:** `https://fesistats.vercel.app/admin/milestones`
+**URL:** `https://itzfesi.ir/admin/milestones`
 
 **Features:**
 - **Current Stats**: View real-time follower/subscriber counts for all platforms
@@ -192,7 +192,7 @@ Prevents duplicate notifications for the same milestone.
 
 Thank you for being part of this journey! 🙏
 
-🔗 Dashboard: https://fesistats.vercel.app
+🔗 Dashboard: https://itzfesi.ir
 ```
 
 ## 🧪 Testing
@@ -200,7 +200,7 @@ Thank you for being part of this journey! 🙏
 ### Test Milestone Detection
 ```bash
 # Check current status (won't send notifications)
-curl https://fesistats.vercel.app/api/check-milestones
+curl https://itzfesi.ir/api/check-milestones
 ```
 
 ### Force Check
@@ -268,7 +268,7 @@ on:
 
 1. Sign up at [cron-job.org](https://cron-job.org) (free)
 2. Create new cron job:
-   - **URL**: `https://fesistats.vercel.app/api/check-milestones`
+   - **URL**: `https://itzfesi.ir/api/check-milestones`
    - **Schedule**: Every 2-3 hours
    - **Method**: GET
    - **Timeout**: 30 seconds
@@ -353,7 +353,7 @@ Extend `/api/check-milestones` to send emails alongside Telegram
 
 ## ⚡ Quick Actions
 
-**Check now:** Visit `https://fesistats.vercel.app/api/check-milestones`
+**Check now:** Visit `https://itzfesi.ir/api/check-milestones`
 
 **Reset milestone:** Delete Redis key `milestone:last:<platform>`
 

@@ -23,7 +23,7 @@ jobs:
           echo "🔍 Checking milestones at $(date)"
           
           # Call the milestone check endpoint
-          RESPONSE=$(curl -s -w "\n%{http_code}" https://fesistats.vercel.app/api/check-milestones)
+          RESPONSE=$(curl -s -w "\n%{http_code}" https://itzfesi.ir/api/check-milestones)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | head -n-1)
           

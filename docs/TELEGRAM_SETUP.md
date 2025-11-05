@@ -77,7 +77,7 @@ Or set them manually in `.env.local` for local development.
 **Automatic (Recommended):**
 After deploying to Vercel, simply visit:
 ```
-https://fesistats.vercel.app/api/setup-webhook
+https://itzfesi.ir/api/setup-webhook
 ```
 
 This auto-configures the webhook for your domain.
@@ -119,7 +119,7 @@ Use a strong random string (e.g., generate with: `openssl rand -hex 32`)
 
 ### 2. Access Admin Dashboard
 
-1. Visit `https://fesistats.vercel.app/admin`
+1. Visit `https://itzfesi.ir/admin`
 2. Enter your `ADMIN_BROADCAST_TOKEN`
 3. Click "Login"
 4. Access dashboard at `/admin/dashboard`
@@ -207,7 +207,7 @@ curl "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
 {
   "ok": true,
   "result": {
-    "url": "https://fesistats.vercel.app/api/telegram-bot/webhook",
+    "url": "https://itzfesi.ir/api/telegram-bot/webhook",
     "has_custom_certificate": false,
     "pending_update_count": 0
   }

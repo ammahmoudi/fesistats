@@ -81,13 +81,14 @@ export async function GET() {
 
       if (milestone) {
         milestone.platform = platform;
+        const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir';
         const message = 
           `🎉 <b>Milestone Reached!</b>\n\n` +
           `📱 Platform: <b>${platform}</b>\n` +
           `🎯 Milestone: <b>${milestone.formatted}</b>\n\n` +
           `${generateMilestoneMessage(milestone)}\n\n` +
           `Thank you for being part of this journey! 🙏\n\n` +
-          `🔗 Dashboard: https://fesistats.vercel.app`;
+          `🔗 Dashboard: ${dashboardUrl}`;
 
         console.log(`🎊 New milestone detected: ${platform} - ${milestone.formatted}`);
         

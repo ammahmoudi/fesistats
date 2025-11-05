@@ -5,7 +5,7 @@
 ### Phase 1: Initial Page Load
 
 ```
-User visits https://fesistats.vercel.app
+User visits https://itzfesi.ir
     ↓
 Page loads → components/StatsCard.tsx renders 3 cards
     ↓
@@ -151,7 +151,7 @@ const fetchStats = async (forceRefresh = false) => {
 ### User 2 visits the site
 
 ```
-User 2 visits https://fesistats.vercel.app
+User 2 visits https://itzfesi.ir
     ↓
 Page loads → StatsCard mounts
     ↓

@@ -36,7 +36,7 @@ async function setupWebhook() {
     // Try to detect from Vercel env
     domain = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}`
-      : 'https://fesistats.vercel.app'; // fallback
+      : 'https://itzfesi.ir'; // fallback
     
     console.log(`🔍 Auto-detected domain: ${domain}`);
   }

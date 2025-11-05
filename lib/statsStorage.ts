@@ -145,7 +145,7 @@ async function checkAndNotifyMilestone(
         `🎯 Milestone: <b>${formattedMilestone}</b>\n\n` +
         `${celebrationMessage}\n\n` +
         `Thank you for being part of this journey! 🙏\n\n` +
-        `🔗 Dashboard: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://fesistats.vercel.app'}`;
+        `🔗 Dashboard: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://itzfesi.ir'}`;
 
       // Send notification to all subscribers
       const notificationResult = await sendTelegramNotification(message);
