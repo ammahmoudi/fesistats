@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Send, Rocket, AlertCircle, CheckCircle2, Loader2, Users, LogOut, BarChart3 } from "lucide-react";
+import LanguageToggle from "@/components/LanguageToggle";
 
 interface ApiResult {
   success: boolean;
@@ -106,6 +107,7 @@ export default function AdminDashboard() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 py-8 px-4">
+      <LanguageToggle />
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

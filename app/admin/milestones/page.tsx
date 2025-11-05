@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CheckCircle2, Loader2, RefreshCw, TrendingUp, Award, History } from "lucide-react";
+import LanguageToggle from "@/components/LanguageToggle";
 
 interface MilestoneCheck {
   success: boolean;
@@ -111,6 +112,7 @@ export default function MilestonesPage() {
 
   return (
     <main className="min-h-screen bg-linear-to-br from-gray-900 via-purple-900 to-violet-900 py-8 px-4">
+      <LanguageToggle />
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

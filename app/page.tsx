@@ -29,12 +29,12 @@ export default function Home() {
               </h1>
               <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/50 animate-pulse">
                 <Activity className="w-3 h-3 mr-1" />
-                Live
+                {t('live')}
               </Badge>
             </div>
             <Link href="/stats">
               <div className="px-6 py-2 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition cursor-pointer">
-                View Full Statistics Dashboard →
+                {t('viewFullDashboard')}
               </div>
             </Link>
           </div>
@@ -54,7 +54,7 @@ export default function Home() {
               color="red"
               metric="Subscribers"
             />
-            <p className="text-xs text-center text-gray-400 mt-2 group-hover:text-cyan-400 transition">Click to view detailed stats →</p>
+            <p className="text-xs text-center text-gray-400 mt-2 group-hover:text-cyan-400 transition">{t('clickToViewStats')}</p>
           </Link>
           
           <Link href="/stats" className="cursor-pointer group">
@@ -66,7 +66,7 @@ export default function Home() {
               color="blue"
               metric="Members"
             />
-            <p className="text-xs text-center text-gray-400 mt-2 group-hover:text-cyan-400 transition">Click to view detailed stats →</p>
+            <p className="text-xs text-center text-gray-400 mt-2 group-hover:text-cyan-400 transition">{t('clickToViewStats')}</p>
           </Link>
           
           <Link href="/stats" className="cursor-pointer group">
@@ -78,7 +78,7 @@ export default function Home() {
               color="pink"
               metric="Followers"
             />
-            <p className="text-xs text-center text-gray-400 mt-2 group-hover:text-cyan-400 transition">Click to view detailed stats →</p>
+            <p className="text-xs text-center text-gray-400 mt-2 group-hover:text-cyan-400 transition">{t('clickToViewStats')}</p>
           </Link>
         </div>
 
@@ -87,7 +87,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="text-center text-gray-400 mt-12">
-          <p>Stay updated with ItzFesi&apos;s latest milestones</p>
+          <p>{t('stayUpdated')}</p>
         </footer>
       </div>
     </main>

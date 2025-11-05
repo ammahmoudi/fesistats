@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { TrendingUp, Calendar, RefreshCw, Loader2, Activity, ArrowUpRight, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/LanguageContext";
+import LanguageToggle from "@/components/LanguageToggle";
 
 interface StatData {
   platform: string;
@@ -25,10 +27,15 @@ interface StatData {
 type TimeRange = "day" | "week" | "month";
 
 const PLATFORMS = ["YouTube", "Telegram", "Instagram"];
-const TIME_RANGES: { label: string; value: TimeRange }[] = [
-  { label: "24 Hours", value: "day" },
-  { label: "7 Days", value: "week" },
-  { label: "30 Days", value: "month" },
+const PLATFORM_KEYS: Record<string, string> = {
+  "YouTube": "youtube",
+  "Telegram": "telegram",
+  "Instagram": "instagram",
+};
+const TIME_RANGES: { label: string; shortLabel: string; value: TimeRange }[] = [
+  { label: "hours24", shortLabel: "hours24Short", value: "day" },
+  { label: "days7", shortLabel: "days7Short", value: "week" },
+  { label: "days30", shortLabel: "days30Short", value: "month" },
 ];
 
 const COLORS: Record<string, string> = {
@@ -48,6 +55,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>("day");
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchStats();
@@ -110,22 +118,23 @@ export default function StatsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 py-12 px-4 sm:px-6 lg:px-8">
+      <LanguageToggle />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link href="/" className="inline-block mb-4">
             <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-purple-500/10">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t('backToHome')}
             </Button>
           </Link>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-4xl font-bold text-white flex items-center gap-3">
                 <Activity className="w-10 h-10 text-cyan-400" />
-                Statistics Dashboard
+                {t('statisticsTitle')}
               </h1>
-              <p className="text-gray-300 mt-2">Real-time growth trends and historical data</p>
+              <p className="text-gray-300 mt-2">{t('realTimeGrowth')}</p>
             </div>
             <Button
               onClick={fetchStats}
@@ -133,51 +142,12 @@ export default function StatsPage() {
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              {t('refresh')}
             </Button>
           </div>
           {lastUpdated && (
-            <p className="text-sm text-gray-400">Last updated: {lastUpdated}</p>
+            <p className="text-sm text-gray-400">{t('lastUpdated')} {lastUpdated}</p>
           )}
-        </div>
-
-        {/* Current Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {stats.map((stat) => (
-            <Card
-              key={stat.platform}
-              className={`bg-gradient-to-br ${COLOR_CLASSES[stat.platform]} border-2 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm`}
-            >
-              <CardContent className="pt-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <p className="text-gray-300 text-sm font-medium uppercase tracking-wider">{stat.platform}</p>
-                    <h3 className="text-4xl font-bold text-white mt-2">
-                      {stat.count.toLocaleString()}
-                    </h3>
-                    {stat.history.length > 0 && (
-                      <div className="flex items-center gap-1 mt-2 text-sm text-green-400">
-                        <ArrowUpRight className="w-4 h-4" />
-                        +{getGrowth(stat.platform).toLocaleString()}
-                      </div>
-                    )}
-                  </div>
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center`} style={{ backgroundColor: COLORS[stat.platform] + "20" }}>
-                    <TrendingUp
-                      className="w-6 h-6"
-                      style={{ color: COLORS[stat.platform] }}
-                    />
-                  </div>
-                </div>
-                {stat.views !== undefined && (
-                  <div className="text-xs text-gray-400 pt-3 border-t border-white/10">
-                    <p>👁️ Views: {stat.views.toLocaleString()}</p>
-                    {stat.videos !== undefined && <p>🎬 Videos: {stat.videos}</p>}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
         </div>
 
         {/* Time Range Selection */}
@@ -193,7 +163,7 @@ export default function StatsPage() {
               }`}
             >
               <Calendar className="w-4 h-4 mr-2" />
-              {range.label}
+              {t(range.label as any)}
             </Button>
           ))}
         </div>
@@ -205,11 +175,11 @@ export default function StatsPage() {
         ) : chartData.length > 0 ? (
           <Card className="bg-gray-800/40 border-purple-500/30 backdrop-blur-md">
             <CardHeader>
-              <CardTitle className="text-white text-2xl">Platform Comparison</CardTitle>
+              <CardTitle className="text-white text-2xl">{t('platformComparison')}</CardTitle>
               <CardDescription>
-                Compare all platforms side by side for the last {
-                  timeRange === "day" ? "24 hours" : timeRange === "week" ? "7 days" : "30 days"
-                }
+                {t('comparePlatformsText')} {t(
+                  timeRange === "day" ? "hours24Short" : timeRange === "week" ? "days7Short" : "days30Short"
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -260,7 +230,7 @@ export default function StatsPage() {
             <CardContent className="pt-12">
               <div className="h-96 flex items-center justify-center text-gray-400 flex-col gap-2">
                 <Activity className="w-12 h-12 text-gray-600" />
-                <p>No data available yet. Please try again in a few moments.</p>
+                <p>{t('noDataAvailable')}</p>
               </div>
             </CardContent>
           </Card>
@@ -274,23 +244,23 @@ export default function StatsPage() {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[stat.platform] }} />
-                    {stat.platform} Summary
+                    {t(PLATFORM_KEYS[stat.platform] as any)} {t('summary')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-gray-400 text-sm">Current Count</p>
+                      <p className="text-gray-400 text-sm">{t('currentCount')}</p>
                       <p className="text-3xl font-bold text-white">{stat.count.toLocaleString()}</p>
                     </div>
                     {stat.history.length > 0 && (
                       <>
                         <div>
-                          <p className="text-gray-400 text-sm">Data Points</p>
+                          <p className="text-gray-400 text-sm">{t('dataPoints')}</p>
                           <p className="text-lg font-semibold text-cyan-400">{stat.history.length}</p>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm">Total Growth</p>
+                          <p className="text-gray-400 text-sm">{t('totalGrowth')}</p>
                           <p className="text-lg font-semibold text-green-400 flex items-center gap-1">
                             <ArrowUpRight className="w-4 h-4" />
                             +{(stat.history[stat.history.length - 1].count - stat.history[0].count).toLocaleString()}

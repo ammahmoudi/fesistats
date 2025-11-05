@@ -56,12 +56,12 @@ export default function NotificationForm() {
           <div className="bg-white/5 rounded-lg p-4 space-y-3">
             <h3 className="text-white font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-green-400" />
-              How it works:
+              {t('howItWorksTitle')}
             </h3>
             <ol className="text-gray-300 text-sm space-y-2 ml-7 list-decimal">
-              <li>Click the button below to open our Telegram bot</li>
-              <li>Press <span className="text-blue-300 font-semibold">/start</span> to subscribe</li>
-              <li>You&apos;ll receive notifications for new milestones!</li>
+              <li>{t('step1')}</li>
+              <li>Press <span className="text-blue-300 font-semibold">/start</span> {t('step2').split('/start ').pop()}</li>
+              <li>{t('step3')}</li>
             </ol>
           </div>
 
@@ -81,16 +81,16 @@ export default function NotificationForm() {
           <div className="grid grid-cols-2 gap-3 text-center">
             <div className="bg-white/5 rounded-lg p-3">
               <p className="text-2xl mb-1">⚡</p>
-              <p className="text-gray-300 text-xs">Instant notifications</p>
+              <p className="text-gray-300 text-xs">{t('instantNotifications')}</p>
             </div>
             <div className="bg-white/5 rounded-lg p-3">
               <p className="text-2xl mb-1">🔒</p>
-              <p className="text-gray-300 text-xs">Private & secure</p>
+              <p className="text-gray-300 text-xs">{t('privateSecure')}</p>
             </div>
           </div>
 
           <p className="text-gray-400 text-xs text-center">
-            You can unsubscribe anytime by sending /stop to the bot
+            {t('unsubscribeAnytime')}
           </p>
         </CardContent>
       </Card>

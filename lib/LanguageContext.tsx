@@ -13,7 +13,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>('fa');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -23,6 +23,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       setLanguageState(savedLang);
       document.documentElement.lang = savedLang;
       document.documentElement.dir = savedLang === 'fa' ? 'rtl' : 'ltr';
+    } else {
+      // Default to Persian if no saved preference
+      document.documentElement.lang = 'fa';
+      document.documentElement.dir = 'rtl';
     }
   }, []);
 
