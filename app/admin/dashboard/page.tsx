@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Send, Rocket, AlertCircle, CheckCircle2, Loader2, Users, LogOut, BarChart3 } from "lucide-react";
 import LanguageToggle from "@/components/LanguageToggle";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface ApiResult {
   success: boolean;
@@ -35,6 +36,7 @@ export default function AdminDashboard() {
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const token = sessionStorage.getItem('admin_token');
@@ -53,7 +55,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('admin_token');
-    toast.success("Logged out");
+    toast.success(t('loginSuccess'));
     router.push('/admin');
   };
 
@@ -65,13 +67,13 @@ export default function AdminDashboard() {
     setResult(null);
 
     if (!message.trim()) {
-      toast.error("Missing fields", { description: "Please enter a message." });
+      toast.error(t('error'), { description: t('subscribeError') });
       setSending(false);
       return;
     }
 
     if (useTemplate && !milestone.trim()) {
-      toast.error("Missing fields", { description: "Please fill milestone when using template." });
+      toast.error(t('error'), { description: t('subscribeError') });
       setSending(false);
       return;
     }
@@ -105,12 +107,12 @@ export default function AdminDashboard() {
       setResult(data);
 
       if (!res.ok || !data.success) {
-        toast.error("Broadcast failed", { description: data.error || data.message || 'Unknown error' });
+        toast.error(t('broadcastFailed'), { description: data.error || data.message || t('subscribeError') });
       } else {
         if (data.total === 0) {
-          toast.warning("No subscribers", { description: "No users subscribed yet." });
+          toast.warning(t('noSubscribers'), { description: t('noSubscribersDesc') });
         } else {
-          toast.success("Broadcast sent", { description: `${data.successful}/${data.total} delivered` });
+          toast.success(t('broadcastSent'), { description: `${data.successful}/${data.total} ${t('delivered')}` });
           // Refresh subscriber count
           const countRes = await fetch(`/api/telegram-bot/subscribers?token=${encodeURIComponent(adminToken)}`);
           const countData = await countRes.json();
@@ -119,7 +121,7 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Request failed", { description: err instanceof Error ? err.message : 'Unknown error' });
+      toast.error(t('requestFailed'), { description: err instanceof Error ? err.message : t('subscribeError') });
     } finally {
       setSending(false);
     }
@@ -138,9 +140,9 @@ export default function AdminDashboard() {
           <div>
             <h1 className="text-4xl font-bold text-white flex items-center gap-3">
               <BarChart3 className="w-10 h-10 text-pink-300" />
-              Admin Dashboard
+              {t('adminDashboard')}
             </h1>
-            <p className="text-gray-300 mt-1">Manage broadcasts and monitor subscribers</p>
+            <p className="text-gray-300 mt-1">{t('manageBroadcasts')}</p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -148,7 +150,7 @@ export default function AdminDashboard() {
               variant="outline"
               className="bg-white/10 border-white/20 text-white hover:bg-white/20"
             >
-              🏆 Milestones
+              🏆 {t('milestoneButton')}
             </Button>
             <Button
               onClick={handleLogout}
@@ -156,7 +158,7 @@ export default function AdminDashboard() {
               className="bg-white/10 border-white/20 text-white hover:bg-white/20"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              {t('logout')}
             </Button>
           </div>
         </div>
@@ -170,13 +172,13 @@ export default function AdminDashboard() {
                   <Users className="w-6 h-6 text-pink-300" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Total Subscribers</p>
+                  <p className="text-sm text-gray-400">{t('totalSubscribers')}</p>
                   <p className="text-3xl font-bold text-white">
                     {subscriberCount !== null ? subscriberCount : '...'}
                   </p>
                 </div>
               </div>
-              <Badge className="bg-green-600/20 text-green-300 border-green-500/30">Active</Badge>
+              <Badge className="bg-green-600/20 text-green-300 border-green-500/30">{t('live')}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -186,10 +188,10 @@ export default function AdminDashboard() {
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
               <Rocket className="w-8 h-8 text-pink-300" />
-              <CardTitle className="text-3xl text-white font-bold">Broadcast Notification</CardTitle>
+              <CardTitle className="text-3xl text-white font-bold">{t('broadcastNotification')}</CardTitle>
             </div>
             <CardDescription className="text-gray-300">
-              Send a milestone update to all Telegram subscribers
+              {t('sendToSubscribers')}
             </CardDescription>
             <div className="mt-3 flex flex-wrap gap-2">
               {PLATFORMS.map(p => (
@@ -213,8 +215,8 @@ export default function AdminDashboard() {
               {/* Template Toggle */}
               <div className="flex items-center gap-4 p-3 rounded-lg bg-white/5 border border-white/10">
                 <div className="flex-1">
-                  <p className="text-white font-medium">Use Template</p>
-                  <p className="text-xs text-gray-400">Use standard milestone template or send custom message</p>
+                  <p className="text-white font-medium">{t('useTemplate')}</p>
+                  <p className="text-xs text-gray-400">{t('useTemplateDesc')}</p>
                 </div>
                 <button
                   type="button"
@@ -235,10 +237,10 @@ export default function AdminDashboard() {
               {useTemplate ? (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="milestone" className="text-white">Milestone</Label>
+                    <Label htmlFor="milestone" className="text-white">{t('milestoneLabel')}</Label>
                     <Input
                       id="milestone"
-                      placeholder="e.g. 10,000 Subscribers"
+                      placeholder={t('milestonePlaceholder')}
                       value={milestone}
                       onChange={(e) => setMilestone(e.target.value)}
                       className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
@@ -246,10 +248,10 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="text-white">Custom Message</Label>
+                    <Label htmlFor="message" className="text-white">{t('customMessage')}</Label>
                     <Textarea
                       id="message"
-                      placeholder="Add a custom message to the template..."
+                      placeholder={t('customMessagePlaceholder')}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       rows={3}
@@ -260,10 +262,10 @@ export default function AdminDashboard() {
               ) : (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="customMessage" className="text-white">Custom Message</Label>
+                    <Label htmlFor="customMessage" className="text-white">{t('customMessage')}</Label>
                     <Textarea
                       id="customMessage"
-                      placeholder="Write your custom message..."
+                      placeholder={t('customMessagePlaceholder')}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       rows={5}
@@ -273,22 +275,22 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="imageUrl" className="text-white">Image URL or Banner</Label>
+                    <Label htmlFor="imageUrl" className="text-white">{t('imageUrlLabel')}</Label>
                     <Input
                       id="imageUrl"
                       type="url"
-                      placeholder="https://example.com/image.jpg or /main_banner.webp"
+                      placeholder={t('imageUrlPlaceholder')}
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
                       className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
                     />
-                    <p className="text-xs text-gray-400">Tip: Use <code className="bg-black/30 px-1 rounded">/main_banner.webp</code> for the main banner</p>
+                    <p className="text-xs text-gray-400">{t('imageUrlTip')}</p>
                   </div>
                 </>
               )}
 
               <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>Platform: <Badge className="bg-pink-600 text-white border-pink-500">{platform}</Badge></span>
+                <span>{t('platform')}: <Badge className="bg-pink-600 text-white border-pink-500">{platform}</Badge></span>
                 <span>{message.length}/500</span>
               </div>
 
@@ -298,9 +300,9 @@ export default function AdminDashboard() {
                 className="w-full bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold transition-all duration-300 disabled:opacity-50"
               >
                 {sending ? (
-                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Sending...</span>
+                  <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> {t('sending')}...</span>
                 ) : (
-                  <span className="flex items-center gap-2"><Send className="w-4 h-4" /> Send Broadcast</span>
+                  <span className="flex items-center gap-2"><Send className="w-4 h-4" /> {t('sendButton')}</span>
                 )}
               </Button>
             </form>
@@ -309,25 +311,25 @@ export default function AdminDashboard() {
               <div className="mt-8 p-4 rounded-lg border border-white/20 bg-white/5 space-y-3">
                 <h3 className="text-white font-semibold flex items-center gap-2">
                   {result.success ? <CheckCircle2 className="w-5 h-5 text-green-400" /> : <AlertCircle className="w-5 h-5 text-red-400" />}
-                  Delivery Report
+                  {t('deliveryReport')}
                 </h3>
                 <p className="text-sm text-gray-300">{result.message}</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-lg text-white font-bold">{result.total}</p>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Total Subs</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">{t('totalSubs')}</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-lg text-green-300 font-bold">{result.successful}</p>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Delivered</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">{t('delivered')}</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-lg text-yellow-300 font-bold">{result.total - result.successful}</p>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Pending/Failed</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">{t('pendingFailed')}</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-lg text-pink-300 font-bold">{platform}</p>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Platform</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">{t('platform')}</p>
                   </div>
                 </div>
               </div>

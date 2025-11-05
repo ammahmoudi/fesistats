@@ -65,6 +65,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields: message, platform' }, { status: 400 });
     }
 
+    // Get the base URL for image resolution
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : 'https://fesistats.vercel.app';
+
     let result;
 
     if (template) {
@@ -78,7 +83,7 @@ export async function POST(request: Request) {
         `📱 Platform: <b>${platform}</b>\n` +
         `🎯 Milestone: <b>${milestone}</b>\n\n` +
         `${message}\n\n` +
-        `🔗 Dashboard: ${process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir'}`;
+        `🔗 Dashboard: ${baseUrl}`;
 
       result = await broadcastMessage(formattedMessage);
     } else {
@@ -87,7 +92,7 @@ export async function POST(request: Request) {
         // Get absolute URL for image
         const absoluteImageUrl = imageUrl.startsWith('http') 
           ? imageUrl 
-          : (process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir') + imageUrl;
+          : baseUrl + imageUrl;
 
         result = await broadcastPhoto(absoluteImageUrl, message);
       } else {

@@ -194,6 +194,13 @@ export const translations = {
     delivered: "Delivered",
     pendingFailed: "Pending/Failed",
     platform: "Platform",
+    useTemplate: "Use Template",
+    useTemplateDesc: "Use standard milestone template or send custom message",
+    customMessage: "Custom Message",
+    customMessagePlaceholder: "Write your custom message...",
+    imageUrlLabel: "Image URL or Banner",
+    imageUrlPlaceholder: "https://example.com/image.jpg or /main_banner.webp",
+    imageUrlTip: "Tip: Use /main_banner.webp for the main banner",
     
     // Milestones Admin Page - Extended
     milestoneTracker: "Milestone Tracker",
@@ -440,6 +447,13 @@ export const translations = {
     delivered: "تحویل شده",
     pendingFailed: "در انتظار/ناموفق",
     platform: "پلتفرم",
+    useTemplate: "استفاده از الگو",
+    useTemplateDesc: "استفاده از الگوی استاندارد نقطه عطف یا ارسال پیام سفارشی",
+    customMessage: "پیام سفارشی",
+    customMessagePlaceholder: "پیام سفارشی خود را بنویسید...",
+    imageUrlLabel: "آدرس URL تصویر یا بنر",
+    imageUrlPlaceholder: "https://example.com/image.jpg یا /main_banner.webp",
+    imageUrlTip: "نکته: برای بنر اصلی از /main_banner.webp استفاده کنید",
     
     // Milestones Admin Page - Extended
     milestoneTracker: "ردیاب نقاط عطف",

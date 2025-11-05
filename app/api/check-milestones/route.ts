@@ -45,6 +45,9 @@ export async function GET() {
   try {
     console.log('🔍 Checking for milestones and saving stats...');
     
+    // Get the base URL for dashboard link
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://fesistats.vercel.app');
+    
     const stats = await fetchPlatformStats();
     const notifications: Array<{ platform: string; milestone: string; delivered: number }> = [];
     const currentStats: Array<{ 
@@ -81,14 +84,13 @@ export async function GET() {
 
       if (milestone) {
         milestone.platform = platform;
-        const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir';
         const message = 
           `🎉 <b>Milestone Reached!</b>\n\n` +
           `📱 Platform: <b>${platform}</b>\n` +
           `🎯 Milestone: <b>${milestone.formatted}</b>\n\n` +
           `${generateMilestoneMessage(milestone)}\n\n` +
           `Thank you for being part of this journey! 🙏\n\n` +
-          `🔗 Dashboard: ${dashboardUrl}`;
+          `🔗 Dashboard: ${baseUrl}`;
 
         console.log(`🎊 New milestone detected: ${platform} - ${milestone.formatted}`);
         
