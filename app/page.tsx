@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Activity } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -18,6 +19,17 @@ export default function Home() {
       
       {/* Silent milestone checker (runs in background) */}
       <MilestoneChecker />
+      
+      {/* Banner */}
+      <div className="w-full relative aspect-video md:aspect-auto md:h-screen overflow-hidden">
+        <Image
+          src="/main_banner.webp"
+          alt="ItzFesi Banner"
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
       
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
