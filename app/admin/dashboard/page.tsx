@@ -35,6 +35,8 @@ export default function AdminDashboard() {
   const [useTemplate, setUseTemplate] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [generatingBanner, setGeneratingBanner] = useState(false);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const router = useRouter();
   const { t, isRTL } = useLanguage();
 
@@ -70,6 +72,40 @@ export default function AdminDashboard() {
       };
       reader.readAsDataURL(file);
       toast.success("Image uploaded!", { description: `File: ${file.name}` });
+    }
+  };
+
+  const generateAIBanner = async () => {
+    if (!useTemplate || !milestone.trim()) {
+      toast.error(t('error'), { description: "Please fill in milestone when using template mode" });
+      return;
+    }
+
+    setGeneratingBanner(true);
+    try {
+      const response = await fetch('/api/generate-banner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          milestone,
+          platform,
+          message: message.trim() || `Celebrating ${milestone} ${platform} milestone! 🎉`
+        })
+      });
+
+      const data = await response.json();
+      if (data.success && data.imageUrl) {
+        setImageUrl(data.imageUrl);
+        setBannerPreview(data.imageUrl);
+        toast.success("AI Banner Generated!", { description: "Preview above. Click Send to use it." });
+      } else {
+        toast.error("Generation failed", { description: data.error || "Could not generate banner" });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error generating banner", { description: err instanceof Error ? err.message : "Unknown error" });
+    } finally {
+      setGeneratingBanner(false);
     }
   };
 
@@ -282,6 +318,32 @@ export default function AdminDashboard() {
                       className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 resize-none"
                     />
                   </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={generateAIBanner}
+                      disabled={generatingBanner || !milestone.trim()}
+                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {generatingBanner ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Generating...
+                        </span>
+                      ) : (
+                        '✨ Generate AI Banner'
+                      )}
+                    </Button>
+                  </div>
+
+                  {bannerPreview && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-green-400">✓ AI Banner Preview:</p>
+                      <div className="rounded-lg overflow-hidden border-2 border-green-500/30">
+                        <img src={bannerPreview} alt="Generated banner" className="w-full h-auto" />
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="imageUrl" className="text-white">{t('imageUrlLabel')}</Label>

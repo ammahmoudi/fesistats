@@ -16,6 +16,31 @@ async function sendPhoto(chatId: number, photoUrl: string, caption: string) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) throw new Error('Bot token missing');
   const url = `https://api.telegram.org/bot${botToken}/sendPhoto`;
+  
+  // If it's a data URL (base64), we need to handle it differently
+  if (photoUrl.startsWith('data:')) {
+    // For base64, Telegram doesn't accept data URLs directly
+    // We need to send it as FormData with binary data
+    const matches = photoUrl.match(/data:([^;]+);base64,(.+)/);
+    if (matches) {
+      const [, mimeType, base64Data] = matches;
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      // Create FormData with the binary image
+      const formData = new FormData();
+      formData.append('chat_id', String(chatId));
+      formData.append('photo', new Blob([buffer], { type: mimeType }), 'banner.png');
+      formData.append('caption', caption);
+      formData.append('parse_mode', 'HTML');
+      
+      return fetch(url, {
+        method: 'POST',
+        body: formData
+      });
+    }
+  }
+  
+  // For regular URLs, send as JSON
   return fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
