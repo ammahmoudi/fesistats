@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { saveStats } from '@/lib/statsStorage';
 
 // Cache configuration - revalidate every 5 minutes
 export const revalidate = 300; // 5 minutes in seconds
@@ -70,13 +71,21 @@ export async function GET(request: Request) {
 
     const statistics = data.items[0].statistics;
 
-    return NextResponse.json({
+    const result = {
       subscriberCount: parseInt(statistics.subscriberCount),
       viewCount: parseInt(statistics.viewCount),
       videoCount: parseInt(statistics.videoCount),
       platform: 'YouTube',
       lastUpdated: new Date().toISOString()
+    };
+
+    // Save to persistent stats storage
+    await saveStats('YouTube', result.subscriberCount, {
+      views: result.viewCount,
+      videos: result.videoCount
     });
+
+    return NextResponse.json(result);
 
   } catch (error) {
     if (error instanceof Error) {

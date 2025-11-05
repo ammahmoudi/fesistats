@@ -2,6 +2,7 @@
 import { Redis } from '@upstash/redis';
 
 const MILESTONE_KEY_PREFIX = 'milestone:last:';
+const MILESTONE_HISTORY_PREFIX = 'milestone:history:';
 
 let redis: Redis | null = null;
 function getClient(): Redis {
@@ -14,6 +15,13 @@ function getClient(): Redis {
     redis = new Redis({ url, token });
   }
   return redis;
+}
+
+interface MilestoneRecord {
+  platform: string;
+  value: number;
+  timestamp: number;
+  notified: boolean;
 }
 
 /**
@@ -31,10 +39,30 @@ export async function getLastNotifiedMilestone(platform: string): Promise<number
 
 /**
  * Set the last notified milestone value for a platform
+ * Also saves to milestone history for record keeping
  */
 export async function setLastNotifiedMilestone(platform: string, value: number): Promise<void> {
   try {
-    await getClient().set(`${MILESTONE_KEY_PREFIX}${platform.toLowerCase()}`, value);
+    const client = getClient();
+    const platformKey = platform.toLowerCase();
+    
+    // Save to current milestone
+    await client.set(`${MILESTONE_KEY_PREFIX}${platformKey}`, value, { ex: 2592000 }); // 30 day TTL
+    
+    // Save to milestone history
+    const record: MilestoneRecord = {
+      platform,
+      value,
+      timestamp: Date.now(),
+      notified: true,
+    };
+    
+    await client.lpush(
+      `${MILESTONE_HISTORY_PREFIX}${platformKey}`,
+      JSON.stringify(record)
+    );
+    
+    console.log(`✅ Milestone saved for ${platform}: ${value}`);
   } catch (error) {
     console.error('Error setting last milestone:', error);
   }
@@ -60,5 +88,57 @@ export async function getAllLastMilestones(): Promise<Record<string, number>> {
   } catch (error) {
     console.error('Error getting all milestones:', error);
     return {};
+  }
+}
+
+/**
+ * Get milestone history for a platform
+ */
+export async function getMilestoneHistory(platform: string, limit: number = 50): Promise<MilestoneRecord[]> {
+  try {
+    const platformKey = platform.toLowerCase();
+    const historyKey = `${MILESTONE_HISTORY_PREFIX}${platformKey}`;
+    
+    const records = await getClient().lrange<string>(historyKey, 0, limit - 1);
+    
+    return records
+      .map((item: string) => {
+        try {
+          return JSON.parse(item);
+        } catch {
+          return null;
+        }
+      })
+      .filter((item: any): item is MilestoneRecord => item !== null)
+      .sort((a, b) => b.timestamp - a.timestamp);
+  } catch (error) {
+    console.error(`Error getting milestone history for ${platform}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Verify and fix milestones if needed (recovery function)
+ * Use this if you suspect milestones weren't saved properly
+ */
+export async function recordMilestoneIfMissing(
+  platform: string,
+  previousCount: number,
+  currentCount: number
+): Promise<void> {
+  try {
+    const lastNotified = await getLastNotifiedMilestone(platform);
+    
+    // If we crossed a milestone boundary since last record
+    if (!lastNotified || currentCount > lastNotified) {
+      // This should be caught by normal flow, but just in case
+      console.log(`⚠️  Milestone recovery check for ${platform}: last=${lastNotified}, current=${currentCount}`);
+      
+      if (currentCount > (lastNotified || 0)) {
+        await setLastNotifiedMilestone(platform, currentCount);
+      }
+    }
+  } catch (error) {
+    console.error(`Error in milestone recovery for ${platform}:`, error);
   }
 }

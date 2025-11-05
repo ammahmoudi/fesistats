@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { saveStats } from '@/lib/statsStorage';
 
 // Cache configuration - revalidate every 5 minutes
 export const revalidate = 300; // 5 minutes in seconds
@@ -117,6 +118,9 @@ export async function GET(request: Request) {
       const followersCount = await getFollowersFromInstagram(username, forceRefresh);
       
       if (followersCount !== null) {
+        // Save to persistent stats storage
+        await saveStats('Instagram', followersCount);
+        
         return NextResponse.json({
           followersCount,
           lastUpdated: new Date().toISOString(),
@@ -133,6 +137,9 @@ export async function GET(request: Request) {
       const followersCount = await getFollowersFromGraphAPI(accessToken, accountId, forceRefresh);
       
       if (followersCount !== null) {
+        // Save to persistent stats storage
+        await saveStats('Instagram', followersCount);
+        
         return NextResponse.json({
           followersCount,
           lastUpdated: new Date().toISOString(),

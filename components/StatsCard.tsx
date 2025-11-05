@@ -66,6 +66,7 @@ export default function StatsCard({
       }
       
       if (endpoint) {
+        // Try to get from unified stats endpoint first (cached, faster)
         // Add refresh parameter if force refresh is requested
         const url = forceRefresh ? `${endpoint}?refresh=true` : endpoint;
         const response = await fetch(url);

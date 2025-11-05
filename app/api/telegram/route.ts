@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { saveStats } from '@/lib/statsStorage';
 
 // Enable caching with 5-minute revalidation (same as YouTube)
 export const revalidate = 300; // Cache for 5 minutes (300 seconds)
@@ -106,6 +107,9 @@ export async function GET(request: Request) {
         { status: 500 }
       );
     }
+
+    // Save to persistent stats storage
+    await saveStats('Telegram', membersCount);
 
     return NextResponse.json({
       membersCount: membersCount,

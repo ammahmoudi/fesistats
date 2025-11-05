@@ -20,6 +20,9 @@ export default function MilestoneChecker() {
       
       if (lastCheck && now - parseInt(lastCheck) < TWO_HOURS) {
         // Too soon, skip check
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⏸️  Milestone check skipped (too soon)');
+        }
         return;
       }
       
@@ -35,11 +38,30 @@ export default function MilestoneChecker() {
           if (process.env.NODE_ENV === 'development') {
             console.log('✅ Milestone check completed:', data);
           }
+          
+          // Also store check timestamp in a readable format for debugging
+          const checkLog = {
+            timestamp: new Date().toISOString(),
+            success: data.success,
+            milestonesFound: data.notifications?.length || 0,
+            platformsChecked: data.stats?.length || 0,
+          };
+          
+          // Keep last 5 checks in localStorage for debugging
+          try {
+            const logs = JSON.parse(localStorage.getItem('milestoneCheckLogs') || '[]');
+            logs.unshift(checkLog);
+            localStorage.setItem('milestoneCheckLogs', JSON.stringify(logs.slice(0, 5)));
+          } catch (e) {
+            // Ignore storage errors
+          }
+        } else {
+          console.error('❌ Milestone check failed:', response.status, response.statusText);
         }
       } catch (error) {
         // Silent fail - don't disrupt user experience
         if (process.env.NODE_ENV === 'development') {
-          console.error('❌ Milestone check failed:', error);
+          console.error('❌ Milestone check error:', error);
         }
       }
     };

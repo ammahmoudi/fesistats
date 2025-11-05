@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, RefreshCw, TrendingUp, Award } from "lucide-react";
+import { CheckCircle2, Loader2, RefreshCw, TrendingUp, Award, History } from "lucide-react";
 
 interface MilestoneCheck {
   success: boolean;
@@ -22,10 +22,19 @@ interface MilestoneCheck {
   checkedAt?: string;
 }
 
+interface MilestoneRecord {
+  platform: string;
+  value: number;
+  timestamp: number;
+  notified: boolean;
+}
+
 export default function MilestonesPage() {
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState<MilestoneCheck | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [milestonesHistory, setMilestonesHistory] = useState<Record<string, MilestoneRecord[]>>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -35,7 +44,24 @@ export default function MilestonesPage() {
       return;
     }
     setAdminToken(token);
+    fetchMilestoneHistory(token);
   }, [router]);
+
+  const fetchMilestoneHistory = async (token: string) => {
+    try {
+      setLoadingHistory(true);
+      const res = await fetch(`/api/admin/history?token=${token}&type=milestones`);
+      
+      if (res.ok) {
+        const data = await res.json();
+        setMilestonesHistory(data.history || {});
+      }
+    } catch (err) {
+      console.error('Error fetching milestone history:', err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   const handleCheckNow = async () => {
     setChecking(true);
@@ -51,6 +77,10 @@ export default function MilestonesPage() {
           toast.success("Milestones detected!", { 
             description: `${data.notifications.length} notification(s) sent` 
           });
+          // Refresh history after successful notification
+          if (adminToken) {
+            await fetchMilestoneHistory(adminToken);
+          }
         } else {
           toast.info("No new milestones", { description: data.message });
         }
@@ -65,6 +95,14 @@ export default function MilestonesPage() {
     } finally {
       setChecking(false);
     }
+  };
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleString();
+  };
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('en-US').format(num);
   };
 
   if (!adminToken) {
@@ -294,6 +332,85 @@ export default function MilestonesPage() {
                 💡 <strong className="text-white">Pro Tip:</strong> The system uses whichever method triggers first, ensuring milestones are caught quickly
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Milestone History */}
+        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <History className="w-6 h-6 text-purple-300" />
+                <div>
+                  <CardTitle className="text-2xl text-white">Milestone History</CardTitle>
+                  <CardDescription className="text-gray-300">All milestones reached</CardDescription>
+                </div>
+              </div>
+              <Button
+                onClick={() => adminToken && fetchMilestoneHistory(adminToken)}
+                disabled={loadingHistory}
+                variant="outline"
+                size="sm"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                <RefreshCw className={`w-4 h-4 ${loadingHistory ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Object.entries(milestonesHistory).length > 0 ? (
+                Object.entries(milestonesHistory).map(([platform, records]) => (
+                  <div key={platform} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <h3 className="text-white font-semibold mb-3 capitalize flex items-center justify-between">
+                      {platform}
+                      <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">
+                        {records.length} milestone{records.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </h3>
+                    <div className="space-y-2">
+                      {records.map((record, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Badge className={record.notified ? 'bg-green-600/20 text-green-300 border-green-500/30' : 'bg-yellow-600/20 text-yellow-300 border-yellow-500/30'}>
+                              {record.notified ? '✓' : '◐'}
+                            </Badge>
+                            <div>
+                              <p className="text-white font-semibold">{formatNumber(record.value)}</p>
+                              <p className="text-xs text-gray-400">{formatDate(record.timestamp)}</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="bg-white/10 text-gray-300">
+                            {record.notified ? 'Notified' : 'Pending'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-center py-8">
+                  {loadingHistory ? 'Loading...' : 'No milestones recorded yet'}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Data Persistence Info */}
+        <Card className="bg-green-500/10 border-green-500/30 backdrop-blur-md">
+          <CardHeader>
+            <CardTitle className="text-white">✅ Data Persistence Enabled</CardTitle>
+          </CardHeader>
+          <CardContent className="text-green-300 text-sm space-y-2">
+            <p>✓ All stats are now automatically saved to Redis storage</p>
+            <p>✓ Milestone achievements are recorded in persistent storage</p>
+            <p>✓ Historical data is kept for 90 days for analysis</p>
+            <p>✓ Stats are fetched from cache when possible (minimal API calls)</p>
+            <p>✓ Force refresh still available for real-time updates</p>
           </CardContent>
         </Card>
       </div>

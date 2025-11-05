@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSubscribers } from '@/lib/telegramSubscribers';
 import { detectMilestone, generateMilestoneMessage, shouldNotifyMilestone } from '@/lib/milestones';
 import { getLastNotifiedMilestone, setLastNotifiedMilestone } from '@/lib/milestoneStorage';
+import { saveStats, getCurrentStats, shouldRefreshStats } from '@/lib/statsStorage';
 
 interface PlatformStats {
   platform: string;
@@ -89,7 +90,7 @@ export const revalidate = 300; // 5 minutes cache
 
 export async function GET() {
   try {
-    console.log('🔍 Checking for milestones...');
+    console.log('🔍 Checking for milestones and saving stats...');
     
     const stats = await fetchPlatformStats();
     const notifications: Array<{ platform: string; milestone: string; delivered: number }> = [];
@@ -101,6 +102,9 @@ export async function GET() {
     }> = [];
 
     for (const { platform, count, extraInfo } of stats) {
+      // IMPORTANT: Save stats to persistent storage first
+      await saveStats(platform, count, extraInfo);
+      
       const lastNotified = await getLastNotifiedMilestone(platform);
       
       // Store current stats
@@ -111,6 +115,7 @@ export async function GET() {
         extraInfo
       });
 
+      // Check for milestone
       const milestone = shouldNotifyMilestone(count, lastNotified);
 
       if (milestone) {
@@ -128,15 +133,15 @@ export async function GET() {
         const result = await sendTelegramBroadcast(message);
         
         if (result.successful > 0) {
+          // Save milestone to storage (this now includes history)
           await setLastNotifiedMilestone(platform, milestone.value);
           notifications.push({
             platform,
             milestone: milestone.formatted,
             delivered: result.successful
           });
+          console.log(`✅ Milestone saved and notified ${result.successful}/${result.total} subscribers`);
         }
-
-        console.log(`✅ Notified ${result.successful}/${result.total} subscribers`);
       } else {
         console.log(`ℹ️  ${platform}: ${count} (no new milestone, last: ${lastNotified || 'none'})`);
       }
