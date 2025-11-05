@@ -5,11 +5,25 @@ async function sendTo(chatId: number, text: string) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) throw new Error('Bot token missing');
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-  return fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })
   });
+  
+  // Check if the response was successful
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`Telegram API error: ${response.status} - ${errorData.description || 'Unknown error'}`);
+  }
+  
+  // Also validate the JSON response from Telegram API
+  const result = await response.json();
+  if (!result.ok) {
+    throw new Error(`Telegram API returned error: ${result.description || 'Unknown error'}`);
+  }
+  
+  return response;
 }
 
 async function sendPhoto(chatId: number, photoUrl: string, caption: string) {
@@ -33,19 +47,47 @@ async function sendPhoto(chatId: number, photoUrl: string, caption: string) {
       formData.append('caption', caption);
       formData.append('parse_mode', 'HTML');
       
-      return fetch(url, {
+      const response = await fetch(url, {
         method: 'POST',
         body: formData
       });
+      
+      // Check if the response was successful
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Telegram API error: ${response.status} - ${errorData.description || 'Unknown error'}`);
+      }
+      
+      // Also validate the JSON response from Telegram API
+      const result = await response.json();
+      if (!result.ok) {
+        throw new Error(`Telegram API returned error: ${result.description || 'Unknown error'}`);
+      }
+      
+      return response;
     }
   }
   
   // For regular URLs, send as JSON
-  return fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, photo: photoUrl, caption, parse_mode: 'HTML' })
   });
+  
+  // Check if the response was successful
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`Telegram API error: ${response.status} - ${errorData.description || 'Unknown error'}`);
+  }
+  
+  // Validate the JSON response from Telegram API
+  const result = await response.json();
+  if (!result.ok) {
+    throw new Error(`Telegram API returned error: ${result.description || 'Unknown error'}`);
+  }
+  
+  return response;
 }
 
 async function broadcastMessage(message: string) {
@@ -66,11 +108,22 @@ async function broadcastPhoto(photoUrl: string, caption: string) {
   if (!ids.length) {
     return { total: 0, successful: 0, failed: 0, failures: [] as any[] };
   }
+  
+  console.log(`📸 Broadcasting photo to ${ids.length} subscribers. Photo URL: ${photoUrl.substring(0, 50)}...`);
+  
   const results = await Promise.allSettled(ids.map(id => sendPhoto(id, photoUrl, caption)));
   const failures: Array<{ id: number; error: string }> = [];
+  
   results.forEach((r, i) => {
-    if (r.status === 'rejected') failures.push({ id: ids[i], error: r.reason instanceof Error ? r.reason.message : String(r.reason) });
+    if (r.status === 'rejected') {
+      const errorMsg = r.reason instanceof Error ? r.reason.message : String(r.reason);
+      console.error(`❌ Failed to send photo to ${ids[i]}: ${errorMsg}`);
+      failures.push({ id: ids[i], error: errorMsg });
+    } else {
+      console.log(`✅ Photo sent to ${ids[i]}`);
+    }
   });
+  
   return { total: ids.length, successful: ids.length - failures.length, failed: failures.length, failures };
 }
 
@@ -89,6 +142,8 @@ export async function POST(request: Request) {
     if (!message || !platform) {
       return NextResponse.json({ error: 'Missing required fields: message, platform' }, { status: 400 });
     }
+
+    console.log(`📨 Broadcast request received - Platform: ${platform}, Template: ${template}, Has Image: ${!!imageUrl}`);
 
     // Get the base URL for image resolution
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
@@ -110,6 +165,7 @@ export async function POST(request: Request) {
         `${message}\n\n` +
         `🔗 Dashboard: ${baseUrl}`;
 
+      console.log(`📝 Sending template message for milestone: ${milestone}`);
       result = await broadcastMessage(formattedMessage);
     } else {
       // Custom message mode
@@ -119,10 +175,18 @@ export async function POST(request: Request) {
           ? imageUrl 
           : baseUrl + imageUrl;
 
+        console.log(`📸 Sending custom photo message`);
         result = await broadcastPhoto(absoluteImageUrl, message);
       } else {
+        console.log(`💬 Sending custom text message`);
         result = await broadcastMessage(message);
       }
+    }
+
+    console.log(`✅ Broadcast completed - Success: ${result.successful}/${result.total}, Failed: ${result.failed}`);
+    
+    if (result.failures && result.failures.length > 0) {
+      console.error(`⚠️  Failed deliveries:`, result.failures.slice(0, 5)); // Log first 5 failures
     }
 
     return NextResponse.json({ success: true, ...result, message: 'Broadcast attempted' });
