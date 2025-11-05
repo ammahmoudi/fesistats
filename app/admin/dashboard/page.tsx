@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Send, Rocket, AlertCircle, CheckCircle2, Loader2, Users, LogOut, BarChart3 } from "lucide-react";
+import { Send, Rocket, AlertCircle, CheckCircle2, Loader2, Users, LogOut, BarChart3, Upload } from "lucide-react";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/lib/LanguageContext";
 
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
 
   useEffect(() => {
     const token = sessionStorage.getItem('admin_token');
@@ -57,6 +57,20 @@ export default function AdminDashboard() {
     sessionStorage.removeItem('admin_token');
     toast.success(t('loginSuccess'));
     router.push('/admin');
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      toast.success("Image uploaded!", { description: `File: ${file.name}` });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,29 +150,37 @@ export default function AdminDashboard() {
       <LanguageToggle />
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-white flex items-center gap-3">
-              <BarChart3 className="w-10 h-10 text-pink-300" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-4xl font-bold text-white flex items-center gap-2 md:gap-3">
+              <BarChart3 className="w-8 h-8 md:w-10 md:h-10 text-pink-300" />
               {t('adminDashboard')}
             </h1>
-            <p className="text-gray-300 mt-1">{t('manageBroadcasts')}</p>
+            <p className="text-gray-300 text-sm md:text-base mt-1">{t('manageBroadcasts')}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full md:w-auto flex-wrap md:flex-nowrap">
             <Button
               onClick={() => router.push('/admin/milestones')}
               variant="outline"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="flex-1 md:flex-none bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs md:text-sm"
             >
-              🏆 {t('milestoneButton')}
+              <span className="hidden sm:inline">{t('milestoneButton')}</span>
+              <span className="sm:hidden">🏆</span>
             </Button>
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="flex-1 md:flex-none bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs md:text-sm"
             >
-              <LogOut className="w-4 h-4 mr-2" />
+              <LogOut className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
               {t('logout')}
+            </Button>
+            <Button
+              onClick={() => router.push('/')}
+              variant="outline"
+              className="flex-1 md:flex-none bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs md:text-sm"
+            >
+              {t('backToHome')}
             </Button>
           </div>
         </div>
@@ -193,22 +215,6 @@ export default function AdminDashboard() {
             <CardDescription className="text-gray-300">
               {t('sendToSubscribers')}
             </CardDescription>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {PLATFORMS.map(p => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPlatform(p)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors border ${
-                    platform === p 
-                      ? 'bg-pink-600 text-white border-pink-500' 
-                      : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -221,14 +227,16 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setUseTemplate(!useTemplate)}
-                  title={useTemplate ? "Click to use custom mode" : "Click to use template mode"}
-                  className={`relative inline-flex h-8 w-14 rounded-full transition-colors ${
+                  title={useTemplate ? t('useTemplateDesc') : t('customMessage')}
+                  className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${
                     useTemplate ? 'bg-pink-600' : 'bg-gray-600'
                   }`}
                 >
                   <span
-                    className={`inline-block h-7 w-7 transform rounded-full bg-white transition-transform ${
-                      useTemplate ? 'translate-x-6' : 'translate-x-0.5'
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                      isRTL
+                        ? useTemplate ? '-translate-x-7' : '-translate-x-0.5'
+                        : useTemplate ? 'translate-x-7' : 'translate-x-0.5'
                     }`}
                   />
                 </button>
@@ -236,6 +244,22 @@ export default function AdminDashboard() {
 
               {useTemplate ? (
                 <>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {PLATFORMS.map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPlatform(p)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors border ${
+                          platform === p 
+                            ? 'bg-pink-600 text-white border-pink-500' 
+                            : 'bg-white/10 text-gray-300 border-white/20 hover:bg-white/20'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="milestone" className="text-white">{t('milestoneLabel')}</Label>
                     <Input
@@ -258,6 +282,54 @@ export default function AdminDashboard() {
                       className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 resize-none"
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="imageUrl" className="text-white">{t('imageUrlLabel')}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="imageUrl"
+                        type="url"
+                        placeholder={t('imageUrlPlaceholder')}
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 flex-1"
+                      />
+                      <label htmlFor="imageUpload" className="cursor-pointer">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                          onClick={() => document.getElementById('imageUpload')?.click()}
+                        >
+                          <Upload className="w-4 h-4" />
+                        </Button>
+                      </label>
+                      <input
+                        id="imageUpload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        title="Upload image file"
+                        aria-label="Upload image file"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">{t('imageUrlTip')}</p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="bg-pink-600/20 border-pink-500/30 text-pink-300 hover:bg-pink-600/30"
+                        onClick={() => setImageUrl('/main_banner.webp')}
+                      >
+                        📸 Use Main Banner
+                      </Button>
+                    </div>
+                    {imageFile && (
+                      <p className="text-xs text-green-400">✓ File uploaded: {imageFile.name}</p>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>
@@ -275,24 +347,67 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="imageUrl" className="text-white">{t('imageUrlLabel')}</Label>
-                    <Input
-                      id="imageUrl"
-                      type="url"
-                      placeholder={t('imageUrlPlaceholder')}
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
-                    />
-                    <p className="text-xs text-gray-400">{t('imageUrlTip')}</p>
+                    <Label htmlFor="imageUrl2" className="text-white">{t('imageUrlLabel')}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="imageUrl2"
+                        type="url"
+                        placeholder={t('imageUrlPlaceholder')}
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 flex-1"
+                      />
+                      <label htmlFor="imageUpload2" className="cursor-pointer">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                          onClick={() => document.getElementById('imageUpload2')?.click()}
+                        >
+                          <Upload className="w-4 h-4" />
+                        </Button>
+                      </label>
+                      <input
+                        id="imageUpload2"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        title="Upload image file"
+                        aria-label="Upload image file"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">{t('imageUrlTip')}</p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="bg-pink-600/20 border-pink-500/30 text-pink-300 hover:bg-pink-600/30"
+                        onClick={() => setImageUrl('/main_banner.webp')}
+                      >
+                        📸 Use Main Banner
+                      </Button>
+                    </div>
+                    {imageFile && (
+                      <p className="text-xs text-green-400">✓ File uploaded: {imageFile.name}</p>
+                    )}
                   </div>
                 </>
               )}
 
-              <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>{t('platform')}: <Badge className="bg-pink-600 text-white border-pink-500">{platform}</Badge></span>
-                <span>{message.length}/500</span>
-              </div>
+              {useTemplate && (
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span>{t('platform')}: <Badge className="bg-pink-600 text-white border-pink-500">{platform}</Badge></span>
+                  <span>{message.length}/500</span>
+                </div>
+              )}
+
+              {!useTemplate && (
+                <div className="text-xs text-gray-400 text-right">
+                  {message.length}/500
+                </div>
+              )}
 
               <Button
                 type="submit"

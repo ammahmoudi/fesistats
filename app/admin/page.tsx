@@ -97,6 +97,15 @@ export default function AdminLoginPage() {
                 </span>
               )}
             </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push('/')}
+              className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              ← {t("backToHome")}
+            </Button>
           </form>
         </CardContent>
       </Card>

@@ -117,21 +117,30 @@ export default function MilestonesPage() {
       <LanguageToggle />
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-white flex items-center gap-3">
-              <Award className="w-10 h-10 text-pink-300" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-4xl font-bold text-white flex items-center gap-2 md:gap-3">
+              <Award className="w-8 h-8 md:w-10 md:h-10 text-pink-300" />
               {t('milestoneTracker')}
             </h1>
-            <p className="text-gray-300 mt-1">{t('automatedMilestoneDetection')}</p>
+            <p className="text-gray-300 text-sm md:text-base mt-1">{t('automatedMilestoneDetection')}</p>
           </div>
-          <Button
-            onClick={() => router.push('/admin/dashboard')}
-            variant="outline"
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-          >
-            {t('backToDashboard')}
-          </Button>
+          <div className="flex gap-2 w-full md:w-auto flex-wrap md:flex-nowrap">
+            <Button
+              onClick={() => router.push('/admin/dashboard')}
+              variant="outline"
+              className="flex-1 md:flex-none bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs md:text-sm"
+            >
+              {t('backToDashboard')}
+            </Button>
+            <Button
+              onClick={() => router.push('/')}
+              variant="outline"
+              className="flex-1 md:flex-none bg-white/10 border-white/20 text-white hover:bg-white/20 text-xs md:text-sm"
+            >
+              {t('backToHome')}
+            </Button>
+          </div>
         </div>
 
         {/* Info Card */}
