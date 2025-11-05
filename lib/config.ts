@@ -7,6 +7,7 @@
 type ConfigType = {
   STATS_CACHE_TTL: number;
   STATS_HISTORY_RETENTION: number;
+  STATS_SAVE_INTERVAL: number;
   MILESTONE_CHECK_THROTTLE: number;
   MILESTONE_HISTORY_RETENTION: number;
   AUTO_REFRESH_INTERVAL: number;
@@ -21,6 +22,11 @@ export const config: ConfigType = {
   // Cache & Refresh Settings (milliseconds)
   STATS_CACHE_TTL: parseInt(process.env.STATS_CACHE_TTL || '86400') * 1000, // 24 hours default
   STATS_HISTORY_RETENTION: parseInt(process.env.STATS_HISTORY_RETENTION || '90') * 24 * 60 * 60 * 1000, // 90 days
+  
+  // Stats Save Frequency (milliseconds) - How often to save new data points to Redis
+  // Default: every 5 minutes - set to 300 seconds
+  // This prevents duplicate saves of the same data within the interval
+  STATS_SAVE_INTERVAL: parseInt(process.env.STATS_SAVE_INTERVAL || '300') * 1000, // 5 minutes default
   
   // Milestone Check Settings (milliseconds)
   MILESTONE_CHECK_THROTTLE: parseInt(process.env.MILESTONE_CHECK_THROTTLE || '7200') * 1000, // 2 hours default
@@ -62,6 +68,7 @@ if (process.env.NODE_ENV === 'development') {
   console.log('📋 FesiStats Configuration Loaded:', {
     'Cache TTL': `${config.getDisplayValue('STATS_CACHE_TTL', 'hours')} hours`,
     'History Retention': `${config.getDisplayValue('STATS_HISTORY_RETENTION', 'days')} days`,
+    'Stats Save Interval': `${config.getDisplayValue('STATS_SAVE_INTERVAL', 'minutes')} minutes`,
     'Milestone Check Throttle': `${config.getDisplayValue('MILESTONE_CHECK_THROTTLE', 'hours')} hours`,
     'Auto Refresh': `${config.getDisplayValue('AUTO_REFRESH_INTERVAL', 'minutes')} minutes`,
     'Manual Refresh Cooldown': `${config.getDisplayValue('MANUAL_REFRESH_COOLDOWN', 'seconds')} seconds`,

@@ -1,63 +1,105 @@
 # FesiStats - Social Media Dashboard
 
-A real-time statistics dashboard for ItzFesi showcasing live follower counts across YouTube, Telegram, and Instagram with automated milestone notifications.
+A real-time statistics dashboard for ItzFesi showcasing live follower counts across YouTube, Telegram, and Instagram with automated milestone notifications, historical data tracking, and advanced analytics.
 
-## 🎯 Features
+## ✨ Features
 
 ### 📊 Real-time Stats Display
-- **YouTube** (LIVE): Real-time subscriber counts via YouTube Data API v3
-- **Telegram** (LIVE): Real-time member counts from public channel page  
-- **Instagram** (LIVE): Real-time follower counts via Instagram internal API
+
+- **YouTube** (LIVE): Real-time subscriber counts + view counts + video count
+- **Telegram** (LIVE): Real-time member counts from public channel  
+- **Instagram** (LIVE): Real-time follower counts via web scraping
 - 🔄 **Auto-Refresh**: Live data updates every 5 minutes automatically
-- 🔃 **Manual Refresh**: Click refresh button for instant updates
-- ⚡ **Server-Side Caching**: Optimized API usage with configurable cache
+- 🔃 **Manual Refresh**: Click refresh button for instant updates (with cooldown)
+- ⚡ **Server-Side Caching**: 24-hour cache with configurable TTL
+- 📈 **Historical Analytics**: 100+ data points per platform retained
+- 💾 **Redis Persistence**: All stats persisted to Upstash Redis
+
+### 📊 Advanced Statistics Dashboard (`/stats`)
+
+- **Interactive Line Charts**: Beautiful Recharts visualization for trends
+- **Multi-Platform Comparison**: View all 3 platforms on one chart
+- **Time Range Selection**: 24 hours, 7 days, or 30 days views
+- **Growth Metrics**: Real-time growth calculations
+- **100+ Data Points**: Comprehensive historical data per platform
+- **Responsive Design**: Optimized for desktop, tablet, and mobile
+- **Performance Optimized**: Single consolidated page (removed duplicate modal)
+- **Auto-Loading**: Data auto-refreshes every 5 minutes
+- **Smooth Animations**: Recharts with 500ms animation duration
 
 ### 🤖 Telegram Bot Notifications
+
 - **User Subscription**: Subscribe via /start command
 - **Bot Commands**: /start, /stop, /status
 - **Persistent Storage**: Upstash Redis for subscriber management
 - **Automated Webhooks**: Auto-configuration after deployments
 
 ### 🎯 Automated Milestone Notifications
-- **Smart Detection**: Automatically detects milestones (1K-10K, 15K-50K, etc.)
-- **Multi-Platform**: Works for YouTube, Telegram, and Instagram
-- **Duplicate Prevention**: Redis tracks last notified milestone
-- **Celebration Messages**: Random positive messages for each milestone
 
-### 🔐 Admin Dashboard
-- **Secure Login**: Token-based authentication
-- **Broadcast Control**: Send notifications to all subscribers
-- **Milestone Management**: Manual checks and monitoring
-- **Delivery Reports**: Real-time statistics
-- **Subscriber Analytics**: View total counts
+- **Smart Detection**: Automatically detects milestones (1K-10K, 15K-50K, major milestones)
+- **Multi-Platform**: Works for YouTube, Telegram, and Instagram
+- **Duplicate Prevention**: Redis tracks last notified milestone per platform
+- **Celebration Messages**: Random positive messages for each milestone
+- **Multiple Check Methods**: 
+  - Client-side checks (2 hours per session)
+  - GitHub Actions (every 3 hours)
+  - Vercel Cron (daily at midnight)
+- **Admin Dashboard**: Manual milestone checks and history tracking
+
+### � Data Management & Storage
+
+- **Redis Integration**: All data persisted to Upstash Redis
+- **Configurable Save Frequency**: Default 1 minute (adjustable via `STATS_SAVE_INTERVAL`)
+- **90-Day History**: Historical data retained for trend analysis
+- **Throttled Writes**: Prevents excessive Redis writes while maintaining data granularity
+- **Current Stats TTL**: 24-hour cache for current values
+- **Zero Data Loss**: Automatic cleanup of old entries based on retention policy
+
+### 🔐 Admin Dashboard (`/admin`)
+
+- **Secure Token Authentication**: Generate via environment variable
+- **Broadcast Control**: Send notifications to all subscribers manually
+- **Milestone Management**: View milestone history with timestamps
+- **Current Stats**: See live counts with extra info (YouTube views/videos)
+- **Subscriber Analytics**: Total subscribers and delivery statistics
+- **Check Scheduling**: Manual milestone checks available anytime
 
 ### 🎨 Modern UI
-- Beautiful gradient design with animations
-- LIVE badges for real-time indication
-- Loading states and error handling
-- Fully responsive design
+
+- Beautiful gradient background (gray-900 → purple-900 → violet-900)
+- LIVE status badges for real-time indication
+- Loading states with spinner animations
+- Error handling and toast notifications
+- Fully responsive design (mobile-first)
+- Smooth Recharts animations (500ms)
+- Glass morphism effects with backdrop blur
+- Platform-specific color coding (Red/YouTube, Blue/Telegram, Pink/Instagram)
 
 ## 📚 Documentation
 
-All documentation is in the \docs/\ folder:
+All documentation is in the `docs/` folder:
 
 ### Getting Started
+
 - [Environment Variables Guide](./docs/ENV_VARIABLES_GUIDE.md) - Configure all settings
 - [Documentation Index](./docs/DOCUMENTATION_INDEX.md) - Navigation guide
 
 ### Setup Guides
+
 - [YouTube API Setup](./docs/YOUTUBE_API_SETUP.md)
 - [Telegram Setup](./docs/TELEGRAM_SETUP.md)
 - [Instagram API Setup](./docs/INSTAGRAM_API_SETUP.md)
 - [Webhook Setup](./docs/WEBHOOK_SETUP.md)
 
 ### Architecture & Development
+
 - [Stats Flow Explained](./docs/STATS_FLOW_EXPLAINED.md)
 - [Fetchers Module Structure](./docs/FETCHERS_MODULE_STRUCTURE.md)
 - [Optimization Integration](./docs/OPTIMIZATION_INTEGRATION.md)
 - [Stats Calls Quick Reference](./docs/STATS_CALLS_QUICK_REFERENCE.md)
 
 ### Admin & Operations
+
 - [Admin Access](./docs/ADMIN_ACCESS.md)
 - [Milestone Notifications](./docs/MILESTONE_NOTIFICATIONS.md)
 - [Troubleshooting Guide](./docs/TROUBLESHOOTING_GUIDE.md)

@@ -24,6 +24,7 @@ interface CachedStats {
 const STATS_PREFIX = 'stats:current:';
 const STATS_HISTORY_PREFIX = 'stats:history:';
 const STATS_LAST_FETCHED = 'stats:lastFetched:';
+const STATS_LAST_SAVED = 'stats:lastSaved:'; // Track when last save occurred
 
 let redis: Redis | null = null;
 
@@ -43,6 +44,9 @@ function getClient(): Redis {
  * Save current stats snapshot for a platform
  * Stores both current count and historical data
  * Automatically checks for milestone achievement and sends notifications
+ * 
+ * NOTE: Historical saves are throttled to config.STATS_SAVE_INTERVAL to prevent
+ * excessive Redis writes when the count hasn't changed significantly
  */
 export async function saveStats(
   platform: string,
@@ -67,27 +71,40 @@ export async function saveStats(
       { ex: Math.round(config.STATS_CACHE_TTL / 1000) } // Convert to seconds
     );
 
-    // Save to history (keep forever for historical analysis)
-    const historyKey = `${STATS_HISTORY_PREFIX}${platformKey}`;
-    const snapshot: StatSnapshot = {
-      platform,
-      count,
-      views: extraInfo?.views,
-      videos: extraInfo?.videos,
-      timestamp: now,
-    };
+    // Check if we should save to history (throttled)
+    const lastSaveKey = `${STATS_LAST_SAVED}${platformKey}`;
+    const lastSaveTime = await client.get<string>(lastSaveKey);
+    const timeSinceLastSave = lastSaveTime ? now - parseInt(lastSaveTime) : Infinity;
 
-    // Add to sorted set with timestamp as score for easy range queries
-    await client.zadd(historyKey, {
-      score: now,
-      member: JSON.stringify(snapshot),
-    });
+    if (timeSinceLastSave >= config.STATS_SAVE_INTERVAL) {
+      // Save to history (keep forever for historical analysis)
+      const historyKey = `${STATS_HISTORY_PREFIX}${platformKey}`;
+      const snapshot: StatSnapshot = {
+        platform,
+        count,
+        views: extraInfo?.views,
+        videos: extraInfo?.videos,
+        timestamp: now,
+      };
 
-    // Clean up old history entries based on config retention period
-    const retentionCutoff = now - config.STATS_HISTORY_RETENTION;
-    await client.zremrangebyscore(historyKey, 0, retentionCutoff);
+      // Add to sorted set with timestamp as score for easy range queries
+      await client.zadd(historyKey, {
+        score: now,
+        member: JSON.stringify(snapshot),
+      });
 
-    console.log(`✅ Saved stats for ${platform}: ${count}`);
+      // Clean up old history entries based on config retention period
+      const retentionCutoff = now - config.STATS_HISTORY_RETENTION;
+      await client.zremrangebyscore(historyKey, 0, retentionCutoff);
+
+      // Update last save time
+      await client.set(lastSaveKey, now.toString(), { ex: Math.round(config.STATS_SAVE_INTERVAL / 1000) });
+
+      console.log(`✅ Saved stats for ${platform}: ${count} (throttled save every ${config.getDisplayValue('STATS_SAVE_INTERVAL', 'minutes')} min)`);
+    } else {
+      const nextSaveIn = Math.round((config.STATS_SAVE_INTERVAL - timeSinceLastSave) / 1000);
+      console.log(`⏸️  ${platform}: ${count} (skipped history save, next in ${nextSaveIn}s)`);
+    }
 
     // Automatically check for milestone achievement
     await checkAndNotifyMilestone(platform, count);
@@ -248,7 +265,8 @@ export async function getAllCurrentStats(): Promise<CachedStats[]> {
     for (const key of keys) {
       const statsJson = await client.get<string>(key);
       if (statsJson) {
-        const data = JSON.parse(statsJson);
+        // Handle both string and object responses from Redis
+        const data = typeof statsJson === 'string' ? JSON.parse(statsJson) : statsJson;
         stats.push({
           ...data,
           source: 'cache',
@@ -284,18 +302,59 @@ export async function getStatsHistory(
     const start = startTime || now - 24 * 60 * 60 * 1000;
     const end = endTime || now;
 
-    const historyData = await client.zrange(historyKey, start, end, { byScore: true });
+    console.log(`[getStatsHistory] ${platform}: Fetching range ${start} to ${end}`);
+
+    // Fetch all data from the sorted set
+    let historyData: any[] = [];
+    
+    try {
+      // Try to get by score range first
+      historyData = await client.zrange(historyKey, start, end, { byScore: true });
+      console.log(`[getStatsHistory] ${platform}: zrange returned ${historyData.length} entries`);
+    } catch (scoreError) {
+      // If score-based range fails, get all and filter manually
+      console.log(`[getStatsHistory] Score range query failed for ${platform}, fetching all data...`);
+      const allData = await client.zrange(historyKey, 0, -1);
+      console.log(`[getStatsHistory] Got ${allData.length} total entries, filtering...`);
+      
+      historyData = allData.filter((item: any) => {
+        try {
+          // Handle both string and object returns from Redis
+          const snapshot = typeof item === 'string' ? JSON.parse(item) : item;
+          const inRange = snapshot.timestamp >= start && snapshot.timestamp <= end;
+          return inRange;
+        } catch (e) {
+          console.log(`[getStatsHistory] Failed to parse: ${item}`);
+          return false;
+        }
+      });
+      console.log(`[getStatsHistory] After filter: ${historyData.length} entries`);
+    }
+
+    console.log(`[getStatsHistory] ${platform}: Processing ${historyData.length} entries`);
 
     const history: StatSnapshot[] = historyData
-      .map((item: any) => {
+      .map((item: any, index: number) => {
         try {
-          return JSON.parse(item);
-        } catch {
+          // Log the first item to see what we're dealing with
+          if (index === 0) {
+            console.log(`[getStatsHistory] First item: type=${typeof item}, value=${typeof item === 'object' ? JSON.stringify(item) : item}`);
+          }
+          
+          // Handle both string and object returns from Redis
+          // Redis client might return objects instead of strings
+          const parsed = typeof item === 'string' ? JSON.parse(item) : item;
+          return parsed as StatSnapshot;
+        } catch (e) {
+          if (index === 0) {
+            console.log(`[getStatsHistory] Parse error on first item: ${e}, item type: ${typeof item}`);
+          }
           return null;
         }
       })
-      .filter((item: any) => item !== null);
+      .filter((item: any): item is StatSnapshot => item !== null);
 
+    console.log(`[getStatsHistory] ${platform}: Returning ${history.length} valid entries`);
     return history;
   } catch (error) {
     console.error(`Error getting stats history for ${platform}:`, error);
@@ -324,7 +383,12 @@ export async function getStatsTimeSeries(
 
     const history = await getStatsHistory(platform, startTime, Date.now());
 
-    if (history.length === 0) return [];
+    console.log(`[getStatsTimeSeries] ${platform} (${timeRange}): Got ${history.length} history entries`);
+
+    if (history.length === 0) {
+      console.warn(`[getStatsTimeSeries] No history data for ${platform} in range ${timeRange}`);
+      return [];
+    }
 
     // Group by hour
     const grouped: Record<number, number[]> = {};
@@ -335,26 +399,54 @@ export async function getStatsTimeSeries(
       grouped[hour].push(snapshot.count);
     }
 
+    console.log(`[getStatsTimeSeries] ${platform}: Grouped into ${Object.keys(grouped).length} hours`);
+
     // Create time series with average for each hour
     const timeSeries = Object.entries(grouped)
       .map(([hourKey, counts]) => {
         const hour = parseInt(hourKey);
         const timestamp = hour * 60 * 60 * 1000;
+        const date = new Date(timestamp);
         const avgCount = Math.round(
           counts.reduce((a, b) => a + b, 0) / counts.length
         );
 
+        // Format time more reliably
+        let timeStr = '';
+        if (timeRange === 'day') {
+          // For day view: show HH:MM format
+          timeStr = date.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true
+          });
+        } else if (timeRange === 'week') {
+          // For week view: show day name and time
+          timeStr = date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          });
+        } else {
+          // For month view: show date only
+          timeStr = date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+
         return {
           timestamp,
           count: avgCount,
-          time: new Date(timestamp).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
+          time: timeStr,
         };
       })
       .sort((a, b) => a.timestamp - b.timestamp);
 
+    console.log(`[getStatsTimeSeries] ${platform}: Returning ${timeSeries.length} data points`);
     return timeSeries;
   } catch (error) {
     console.error(`Error getting time series for ${platform}:`, error);

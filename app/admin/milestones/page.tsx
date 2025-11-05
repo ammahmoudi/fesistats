@@ -250,7 +250,7 @@ export default function MilestonesPage() {
                         )}
                         
                         <p className="text-xs text-gray-400 mt-2">
-                          Last notified: {stat.lastNotified ? stat.lastNotified.toLocaleString() : 'Never'}
+                          Last notified: {stat.lastNotified ? new Date(stat.lastNotified).toLocaleString() : 'Never'}
                         </p>
                       </div>
                     ))}

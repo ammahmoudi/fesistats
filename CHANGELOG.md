@@ -1,5 +1,104 @@
 # Changelog
 
+````markdown
+# Changelog
+
+## Version 3.3.0 - Statistics Dashboard & Data Pipeline Fixes
+
+### 🎉 Major Improvements
+
+#### Statistics Dashboard Complete Overhaul
+- **Line Charts**: Switched from bar charts to beautiful line charts for trend visualization
+- **100+ Data Points**: Full historical data now properly displayed
+- **Platform Comparison**: All 3 platforms on single chart for easy comparison
+- **Time Range Selection**: 24 hours, 7 days, 30 days views with smooth transitions
+- **Responsive Layout**: Optimized for all screen sizes
+- **Performance**: Single consolidated stats page (removed duplicate modal)
+- **Data Accuracy**: Charts now show proper growth trends with accurate aggregation
+
+#### Data Pipeline Fixes & Improvements
+- **Fixed Data Loss**: Resolved issue where 90+ Redis entries were being filtered to 0
+- **Root Cause**: Redis client returning objects instead of JSON strings - Fixed with type checking
+- **Data Type Handling**: Added proper handling for both string and object returns from Redis
+- **Logging Enhancement**: Comprehensive logging at every pipeline stage to trace data flow
+- **Throttled Saves**: New `STATS_SAVE_INTERVAL` configuration prevents excessive Redis writes
+- **Data Validation**: Improved filtering logic to preserve all valid data points
+
+#### Data Management
+- **Configurable Save Frequency**: Default 1 minute (adjustable via environment variable)
+- **Redis Throttling**: Prevents excessive writes while maintaining granularity
+- **90-Day Retention**: Historical data kept for comprehensive trend analysis
+- **Smart Cleanup**: Automatic removal of old entries based on retention policy
+- **Zero Data Loss**: Improved data handling throughout entire pipeline
+
+#### Configuration Enhancements
+- **New Config Variable**: `STATS_SAVE_INTERVAL` (seconds)
+- **Environment Templates**: Updated `.env.local.example` with save frequency options
+- **Display Logs**: Config now shows all timing settings in console (development mode)
+- **Flexible Options**: Recommendations for different use cases:
+  - 30 seconds: Very granular (more writes)
+  - 60 seconds: Balanced (recommended)
+  - 300 seconds: Cost-efficient (fewer writes)
+  - 600 seconds: Minimal writes
+
+#### Admin Milestones Page
+- **Date Formatting**: Fixed `lastNotified` timestamp display
+- **Proper Display**: Milestones now show correct date/time instead of raw numbers
+- **User Experience**: Admin can now see exactly when milestones were reached
+- **History Tracking**: Milestone history properly formatted and displayed
+
+### 📁 Files Modified
+```
+app/stats/page.tsx                 # Changed BarChart to LineChart
+lib/config.ts                      # Added STATS_SAVE_INTERVAL config
+lib/statsStorage.ts                # Fixed data pipeline, added throttling
+app/admin/milestones/page.tsx      # Fixed date formatting
+.env.local.example                 # Updated with save interval options
+README.md                          # Updated features and documentation
+```
+
+### 🔧 Technical Details
+
+**Chart Improvements:**
+- Recharts Line component with smooth interpolation
+- 500ms animation duration
+- ConnectNulls for continuous lines
+- No dot markers (cleaner visualization)
+- Legend and tooltip for data exploration
+
+**Data Pipeline Fix:**
+- Added `typeof item === 'string'` check before JSON.parse
+- Handles both raw JSON strings and pre-parsed objects
+- Proper error logging for debugging
+- Type-safe data transformation
+
+**Save Throttling:**
+- Checks `STATS_LAST_SAVED:{platform}` key in Redis
+- Only saves if `config.STATS_SAVE_INTERVAL` has elapsed
+- Logs skipped saves for monitoring
+- Maintains current stats always updated
+
+### 🎨 Visual Improvements
+- Smooth line trends instead of discrete bars
+- Better data point visualization
+- Multi-platform color coding
+- Improved responsive layout
+- Enhanced loading states
+
+### 🚀 Performance
+- Reduced Redis write volume with configurable throttling
+- Faster chart rendering with optimized data
+- Improved page load times
+- Better memory usage
+
+### 📊 Metrics
+- **Before Fix**: 0 data points displayed (data loss bug)
+- **After Fix**: 100+ accurate data points per platform
+- **Chart Quality**: Smooth trends vs no display
+- **User Experience**: Complete statistics vs empty dashboard
+
+---
+
 ## Version 3.2.0 - Real-Time Milestone Detection
 
 ### ⚡ Instant Milestone Notifications
