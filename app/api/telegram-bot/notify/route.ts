@@ -12,12 +12,36 @@ async function sendTo(chatId: number, text: string) {
   });
 }
 
+async function sendPhoto(chatId: number, photoUrl: string, caption: string) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) throw new Error('Bot token missing');
+  const url = `https://api.telegram.org/bot${botToken}/sendPhoto`;
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, photo: photoUrl, caption, parse_mode: 'HTML' })
+  });
+}
+
 async function broadcastMessage(message: string) {
   const ids = await getSubscribers();
   if (!ids.length) {
     return { total: 0, successful: 0, failed: 0, failures: [] as any[] };
   }
   const results = await Promise.allSettled(ids.map(id => sendTo(id, message)));
+  const failures: Array<{ id: number; error: string }> = [];
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') failures.push({ id: ids[i], error: r.reason instanceof Error ? r.reason.message : String(r.reason) });
+  });
+  return { total: ids.length, successful: ids.length - failures.length, failed: failures.length, failures };
+}
+
+async function broadcastPhoto(photoUrl: string, caption: string) {
+  const ids = await getSubscribers();
+  if (!ids.length) {
+    return { total: 0, successful: 0, failed: 0, failures: [] as any[] };
+  }
+  const results = await Promise.allSettled(ids.map(id => sendPhoto(id, photoUrl, caption)));
   const failures: Array<{ id: number; error: string }> = [];
   results.forEach((r, i) => {
     if (r.status === 'rejected') failures.push({ id: ids[i], error: r.reason instanceof Error ? r.reason.message : String(r.reason) });
@@ -36,19 +60,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { message, platform, milestone } = await request.json();
-    if (!message || !platform || !milestone) {
-      return NextResponse.json({ error: 'Missing required fields: message, platform, milestone' }, { status: 400 });
+    const { message, platform, milestone, template, imageUrl } = await request.json();
+    if (!message || !platform) {
+      return NextResponse.json({ error: 'Missing required fields: message, platform' }, { status: 400 });
     }
 
-    const formattedMessage =
-      `🎉 <b>New Milestone Reached!</b>\n\n` +
-      `📱 Platform: <b>${platform}</b>\n` +
-      `🎯 Milestone: <b>${milestone}</b>\n\n` +
-      `${message}\n\n` +
-      `🔗 Dashboard: ${process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir'}`;
+    let result;
 
-    const result = await broadcastMessage(formattedMessage);
+    if (template) {
+      // Use template format
+      if (!milestone) {
+        return NextResponse.json({ error: 'Milestone required when using template' }, { status: 400 });
+      }
+
+      const formattedMessage =
+        `🎉 <b>New Milestone Reached!</b>\n\n` +
+        `📱 Platform: <b>${platform}</b>\n` +
+        `🎯 Milestone: <b>${milestone}</b>\n\n` +
+        `${message}\n\n` +
+        `🔗 Dashboard: ${process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir'}`;
+
+      result = await broadcastMessage(formattedMessage);
+    } else {
+      // Custom message mode
+      if (imageUrl) {
+        // Get absolute URL for image
+        const absoluteImageUrl = imageUrl.startsWith('http') 
+          ? imageUrl 
+          : (process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir') + imageUrl;
+
+        result = await broadcastPhoto(absoluteImageUrl, message);
+      } else {
+        result = await broadcastMessage(message);
+      }
+    }
+
     return NextResponse.json({ success: true, ...result, message: 'Broadcast attempted' });
   } catch (error) {
     console.error('Notification broadcast error:', error);

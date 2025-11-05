@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CheckCircle2, Loader2, RefreshCw, TrendingUp, Award, History } from "lucide-react";
 import LanguageToggle from "@/components/LanguageToggle";
+import { useLanguage } from "@/lib/LanguageContext";
 
 interface MilestoneCheck {
   success: boolean;
@@ -37,6 +38,7 @@ export default function MilestonesPage() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [milestonesHistory, setMilestonesHistory] = useState<Record<string, MilestoneRecord[]>>({});
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const token = sessionStorage.getItem('admin_token');
@@ -119,16 +121,16 @@ export default function MilestonesPage() {
           <div>
             <h1 className="text-4xl font-bold text-white flex items-center gap-3">
               <Award className="w-10 h-10 text-pink-300" />
-              Milestone Tracker
+              {t('milestoneTracker')}
             </h1>
-            <p className="text-gray-300 mt-1">Automated milestone detection and notifications</p>
+            <p className="text-gray-300 mt-1">{t('automatedMilestoneDetection')}</p>
           </div>
           <Button
             onClick={() => router.push('/admin/dashboard')}
             variant="outline"
             className="bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
-            ← Back to Dashboard
+            {t('backToDashboard')}
           </Button>
         </div>
 
@@ -137,45 +139,45 @@ export default function MilestonesPage() {
           <CardHeader>
             <CardTitle className="text-2xl text-white flex items-center gap-2">
               <TrendingUp className="w-6 h-6 text-pink-300" />
-              How It Works
+              {t('howItWorksMillestones')}
             </CardTitle>
             <CardDescription className="text-gray-300">
-              Automatic notifications for rounded subscriber milestones
+              {t('automaticNotifications')}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-gray-300 space-y-4">
             <div>
-              <h3 className="text-white font-semibold mb-2">📊 Tracked Milestones:</h3>
+              <h3 className="text-white font-semibold mb-2">{t('trackedMilestonesTitle')}</h3>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Every 1K from 1K to 10K</li>
-                <li>Every 5K from 15K to 50K</li>
-                <li>Major: 75K, 100K, 250K, 500K, 1M+</li>
+                <li>{t('everyOneK')}</li>
+                <li>{t('everyFiveK')}</li>
+                <li>{t('majorMilestones')}</li>
               </ul>
             </div>
             <div>
-              <h3 className="text-white font-semibold mb-2">⚙️ Automated Checking Methods:</h3>
+              <h3 className="text-white font-semibold mb-2">{t('automatedCheckingMethods')}</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-start gap-2">
-                  <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 shrink-0">Client-Side</Badge>
-                  <span>Homepage checks every <strong className="text-white">2 hours</strong> when users visit</span>
+                  <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 shrink-0">{t('clientSideLabel')}</Badge>
+                  <span>{t('clientSideCheckText')}</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30 shrink-0">GitHub Actions</Badge>
-                  <span>Automated workflow runs every <strong className="text-white">3 hours</strong></span>
+                  <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30 shrink-0">{t('githubActionsLabel')}</Badge>
+                  <span>{t('githubActionsCheckText')}</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30 shrink-0">Vercel Cron</Badge>
-                  <span>Scheduled check runs <strong className="text-white">once daily</strong> (Hobby plan)</span>
+                  <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30 shrink-0">{t('vercelCronLabel')}</Badge>
+                  <span>{t('vercelCronCheckText')}</span>
                 </div>
                 <p className="text-xs text-gray-400 mt-2 pl-2 border-l-2 border-white/20">
-                  Multiple methods ensure reliable milestone detection even with free tier limitations
+                  {t('reliabilityNote')}
                 </p>
               </div>
             </div>
             <div>
-              <h3 className="text-white font-semibold mb-2">🔔 Notifications:</h3>
+              <h3 className="text-white font-semibold mb-2">{t('notificationsLabelMilestone')}</h3>
               <p className="text-sm">
-                When a milestone is reached, all Telegram subscribers receive an automatic celebration message.
+                {t('notificationsTextMilestone')}
               </p>
             </div>
           </CardContent>
@@ -184,9 +186,9 @@ export default function MilestonesPage() {
         {/* Manual Check Card */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardHeader>
-            <CardTitle className="text-2xl text-white">Manual Check</CardTitle>
+            <CardTitle className="text-2xl text-white">{t('manualCheckCard')}</CardTitle>
             <CardDescription className="text-gray-300">
-              Force check for milestones right now
+              {t('forceCheckText')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -197,11 +199,11 @@ export default function MilestonesPage() {
             >
               {checking ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Checking...
+                  <Loader2 className="w-4 h-4 animate-spin" /> {t('checking')}
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4" /> Check Milestones Now
+                  <RefreshCw className="w-4 h-4" /> {t('checkMilestonesNow')}
                 </span>
               )}
             </Button>
@@ -211,7 +213,7 @@ export default function MilestonesPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-white font-semibold flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-green-400" />
-                    Check Results
+                    {t('checkResultsTitle')}
                   </h3>
                   {result.checkedAt && (
                     <p className="text-xs text-gray-400">
@@ -223,7 +225,7 @@ export default function MilestonesPage() {
                 {/* Current Stats */}
                 {result.stats && result.stats.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm text-white font-semibold">📊 Current Stats:</p>
+                    <p className="text-sm text-white font-semibold">{t('currentStatsSection')}</p>
                     {result.stats.map((stat, i) => (
                       <div key={i} className="bg-white/5 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-1">
@@ -237,13 +239,13 @@ export default function MilestonesPage() {
                         {stat.platform === 'YouTube' && stat.extraInfo && (
                           <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
                             <div className="flex justify-between text-xs">
-                              <span className="text-gray-400">👁️ Total Views:</span>
+                              <span className="text-gray-400">👁️ {t('views')}:</span>
                               <span className="text-gray-300 font-medium">
                                 {stat.extraInfo.views?.toLocaleString() || 'N/A'}
                               </span>
                             </div>
                             <div className="flex justify-between text-xs">
-                              <span className="text-gray-400">🎬 Videos:</span>
+                              <span className="text-gray-400">🎬 {t('videos')}:</span>
                               <span className="text-gray-300 font-medium">
                                 {stat.extraInfo.videos?.toLocaleString() || 'N/A'}
                               </span>
@@ -252,7 +254,7 @@ export default function MilestonesPage() {
                         )}
                         
                         <p className="text-xs text-gray-400 mt-2">
-                          Last notified: {stat.lastNotified ? new Date(stat.lastNotified).toLocaleString() : 'Never'}
+                          Last notified: {stat.lastNotified ? new Date(stat.lastNotified).toLocaleString() : t('never')}
                         </p>
                       </div>
                     ))}
@@ -263,15 +265,15 @@ export default function MilestonesPage() {
                 
                 {result.notifications.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm text-white font-semibold">🎉 Milestones Detected:</p>
+                    <p className="text-sm text-white font-semibold">{t('milestonesDetectedSection')}</p>
                     {result.notifications.map((notif, i) => (
                       <div key={i} className="bg-green-500/10 rounded-lg p-3 border border-green-500/30 flex items-center justify-between">
                         <div>
                           <p className="text-white font-medium">{notif.platform}</p>
-                          <p className="text-sm text-gray-300">Milestone: {notif.milestone}</p>
+                          <p className="text-sm text-gray-300">{t('milestoneLabelSmall')} {notif.milestone}</p>
                         </div>
                         <Badge className="bg-green-600/20 text-green-300 border-green-500/30">
-                          {notif.delivered} notified
+                          {notif.delivered} {t('notified')}
                         </Badge>
                       </div>
                     ))}
@@ -281,11 +283,11 @@ export default function MilestonesPage() {
                 <div className="grid grid-cols-2 gap-3 text-center mt-4">
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-lg text-white font-bold">{result.checked}</p>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Platforms Checked</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">{t('platformsCheckedLabel')}</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2">
                     <p className="text-lg text-pink-300 font-bold">{result.notifications.length}</p>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Notifications Sent</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">{t('notificationsSentLabel')}</p>
                   </div>
                 </div>
               </div>
@@ -296,42 +298,42 @@ export default function MilestonesPage() {
         {/* Check Schedule Details */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardHeader>
-            <CardTitle className="text-xl text-white">⏰ Check Schedule</CardTitle>
+            <CardTitle className="text-xl text-white">⏰ {t('checkScheduleTitle')}</CardTitle>
             <CardDescription className="text-gray-300">
-              Multiple automated methods for reliability
+              {t('checkScheduleDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/30">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-white font-medium">🌐 Client-Side Polling</p>
-                <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30">Active</Badge>
+                <p className="text-white font-medium">{t('clientSidePollingTitle')}</p>
+                <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30">{t('clientSidePollingStatus')}</Badge>
               </div>
-              <p className="text-xs text-gray-300">Checks every 2 hours when users visit homepage</p>
-              <p className="text-xs text-gray-400 mt-1">✓ Works on all Vercel plans • No configuration needed</p>
+              <p className="text-xs text-gray-300">{t('clientSidePollingDesc')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('clientSidePollingFeatures')}</p>
             </div>
 
             <div className="bg-purple-500/10 rounded-lg p-3 border border-purple-500/30">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-white font-medium">⚡ GitHub Actions</p>
-                <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">Every 3 hours</Badge>
+                <p className="text-white font-medium">{t('githubActionsPollingTitle')}</p>
+                <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">{t('githubActionsFrequency')}</Badge>
               </div>
-              <p className="text-xs text-gray-300">Automated workflow using GitHub's free tier</p>
-              <p className="text-xs text-gray-400 mt-1">✓ Most reliable method • Runs 8 times per day</p>
+              <p className="text-xs text-gray-300">{t('githubActionsPollingDesc')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('githubActionsPollingFeatures')}</p>
             </div>
 
             <div className="bg-pink-500/10 rounded-lg p-3 border border-pink-500/30">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-white font-medium">⏰ Vercel Cron</p>
-                <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30">Daily</Badge>
+                <p className="text-white font-medium">{t('vercelCronPollingTitle')}</p>
+                <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30">{t('vercelCronFrequency')}</Badge>
               </div>
-              <p className="text-xs text-gray-300">Scheduled at midnight (00:00 UTC)</p>
-              <p className="text-xs text-gray-400 mt-1">✓ Backup method • Hobby plan limitation</p>
+              <p className="text-xs text-gray-300">{t('vercelCronPollingDesc')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('vercelCronPollingFeatures')}</p>
             </div>
 
             <div className="bg-white/5 rounded-lg p-3 border border-white/10 mt-3">
               <p className="text-xs text-gray-400 text-center">
-                💡 <strong className="text-white">Pro Tip:</strong> The system uses whichever method triggers first, ensuring milestones are caught quickly
+                {t('proTip')}
               </p>
             </div>
           </CardContent>
@@ -344,8 +346,8 @@ export default function MilestonesPage() {
               <div className="flex items-center gap-2">
                 <History className="w-6 h-6 text-purple-300" />
                 <div>
-                  <CardTitle className="text-2xl text-white">Milestone History</CardTitle>
-                  <CardDescription className="text-gray-300">All milestones reached</CardDescription>
+                  <CardTitle className="text-2xl text-white">{t('milestoneHistoryTitle')}</CardTitle>
+                  <CardDescription className="text-gray-300">{t('allMilestonesReached')}</CardDescription>
                 </div>
               </div>
               <Button
@@ -395,7 +397,7 @@ export default function MilestonesPage() {
                 ))
               ) : (
                 <p className="text-gray-400 text-center py-8">
-                  {loadingHistory ? 'Loading...' : 'No milestones recorded yet'}
+                  {loadingHistory ? t('loading') : t('noMilestonesRecorded')}
                 </p>
               )}
             </div>
@@ -405,14 +407,14 @@ export default function MilestonesPage() {
         {/* Data Persistence Info */}
         <Card className="bg-green-500/10 border-green-500/30 backdrop-blur-md">
           <CardHeader>
-            <CardTitle className="text-white">✅ Data Persistence Enabled</CardTitle>
+            <CardTitle className="text-white">{t('dataPersistenceTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="text-green-300 text-sm space-y-2">
-            <p>✓ All stats are now automatically saved to Redis storage</p>
-            <p>✓ Milestone achievements are recorded in persistent storage</p>
-            <p>✓ Historical data is kept for 90 days for analysis</p>
-            <p>✓ Stats are fetched from cache when possible (minimal API calls)</p>
-            <p>✓ Force refresh still available for real-time updates</p>
+            <p>{t('statsAutoSaved')}</p>
+            <p>{t('milestonesRecorded')}</p>
+            <p>{t('historicalDataKept')}</p>
+            <p>{t('cachedStats')}</p>
+            <p>{t('forceRefreshAvailable')}</p>
           </CardContent>
         </Card>
       </div>

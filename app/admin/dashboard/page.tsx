@@ -31,6 +31,9 @@ export default function AdminDashboard() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<ApiResult | null>(null);
   const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
+  const [useTemplate, setUseTemplate] = useState(true);
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -61,20 +64,41 @@ export default function AdminDashboard() {
     setSending(true);
     setResult(null);
 
-    if (!milestone.trim() || !message.trim()) {
-      toast.error("Missing fields", { description: "Please fill milestone and message." });
+    if (!message.trim()) {
+      toast.error("Missing fields", { description: "Please enter a message." });
+      setSending(false);
+      return;
+    }
+
+    if (useTemplate && !milestone.trim()) {
+      toast.error("Missing fields", { description: "Please fill milestone when using template." });
       setSending(false);
       return;
     }
 
     try {
+      const payload: any = { 
+        platform,
+        message
+      };
+
+      if (useTemplate) {
+        payload.milestone = milestone;
+        payload.template = true;
+      } else {
+        payload.template = false;
+        if (imageUrl.trim()) {
+          payload.imageUrl = imageUrl;
+        }
+      }
+
       const res = await fetch('/api/telegram-bot/notify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-admin-token': adminToken
         },
-        body: JSON.stringify({ platform, milestone, message })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -106,7 +130,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 py-8 px-4">
+    <main className="min-h-screen bg-linear-to-br from-gray-900 via-purple-900 to-violet-900 py-8 px-4">
       <LanguageToggle />
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
@@ -186,29 +210,82 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="milestone" className="text-white">Milestone</Label>
-                <Input
-                  id="milestone"
-                  placeholder="e.g. 10,000 Subscribers"
-                  value={milestone}
-                  onChange={(e) => setMilestone(e.target.value)}
-                  className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
-                  required
-                />
+              {/* Template Toggle */}
+              <div className="flex items-center gap-4 p-3 rounded-lg bg-white/5 border border-white/10">
+                <div className="flex-1">
+                  <p className="text-white font-medium">Use Template</p>
+                  <p className="text-xs text-gray-400">Use standard milestone template or send custom message</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setUseTemplate(!useTemplate)}
+                  title={useTemplate ? "Click to use custom mode" : "Click to use template mode"}
+                  className={`relative inline-flex h-8 w-14 rounded-full transition-colors ${
+                    useTemplate ? 'bg-pink-600' : 'bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-7 w-7 transform rounded-full bg-white transition-transform ${
+                      useTemplate ? 'translate-x-6' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="message" className="text-white">Message</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Write a short celebratory message..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={5}
-                  className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 resize-none"
-                  required
-                />
-              </div>
+
+              {useTemplate ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="milestone" className="text-white">Milestone</Label>
+                    <Input
+                      id="milestone"
+                      placeholder="e.g. 10,000 Subscribers"
+                      value={milestone}
+                      onChange={(e) => setMilestone(e.target.value)}
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="text-white">Custom Message</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Add a custom message to the template..."
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      rows={3}
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 resize-none"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="customMessage" className="text-white">Custom Message</Label>
+                    <Textarea
+                      id="customMessage"
+                      placeholder="Write your custom message..."
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      rows={5}
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 resize-none"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="imageUrl" className="text-white">Image URL or Banner</Label>
+                    <Input
+                      id="imageUrl"
+                      type="url"
+                      placeholder="https://example.com/image.jpg or /main_banner.webp"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      className="bg-white/20 border-white/30 text-white placeholder:text-gray-400"
+                    />
+                    <p className="text-xs text-gray-400">Tip: Use <code className="bg-black/30 px-1 rounded">/main_banner.webp</code> for the main banner</p>
+                  </div>
+                </>
+              )}
 
               <div className="flex items-center justify-between text-xs text-gray-400">
                 <span>Platform: <Badge className="bg-pink-600 text-white border-pink-500">{platform}</Badge></span>
@@ -218,7 +295,7 @@ export default function AdminDashboard() {
               <Button
                 type="submit"
                 disabled={sending || message.length > 500}
-                className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold transition-all duration-300 disabled:opacity-50"
+                className="w-full bg-linear-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold transition-all duration-300 disabled:opacity-50"
               >
                 {sending ? (
                   <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Sending...</span>

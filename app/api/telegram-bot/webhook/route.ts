@@ -13,6 +13,18 @@ async function sendTelegramMessage(chatId: number, text: string) {
   });
 }
 
+// Send photo with caption via Telegram API
+async function sendTelegramPhoto(chatId: number, photoUrl: string, caption: string) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) return;
+  const url = `https://api.telegram.org/bot${botToken}/sendPhoto`;
+  await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, photo: photoUrl, caption, parse_mode: 'HTML' })
+  });
+}
+
 export async function POST(request: Request) {
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
   if (secret) {
@@ -43,13 +55,16 @@ export async function POST(request: Request) {
       if (!already) {
         await addSubscriber(chatId);
         const total = await getSubscriberCount();
-        await sendTelegramMessage(chatId,
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://fesistats.vercel.app';
+        const bannerUrl = `${appUrl}/main_banner.webp`;
+        const caption =
           `🎉 <b>Welcome, ${firstName}!</b>\n\n` +
           `You've subscribed to <b>ItzFesi Stats</b> notifications.\n` +
           `Subscribers now: <b>${total}</b>\n\n` +
           `You'll get milestone + announcement updates.\n` +
-          `Send /stop to unsubscribe.`
-        );
+          `Send /stop to unsubscribe.`;
+        
+        await sendTelegramPhoto(chatId, bannerUrl, caption);
       } else {
         await sendTelegramMessage(chatId,
           `👋 Hi ${firstName}, you're already subscribed.\nSend /stop to unsubscribe.`
