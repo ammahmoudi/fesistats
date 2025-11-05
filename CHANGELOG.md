@@ -1,5 +1,53 @@
 # Changelog
 
+## Version 3.1.0 - Multi-Language Support
+
+### 🌍 Internationalization Features
+- **Multi-Language Support**: Full i18n implementation with TypeScript context
+- **Supported Languages**: 
+  - English (en)
+  - Farsi/Persian (fa)
+  - More languages easily extensible
+- **Language Toggle**: Component to switch between languages
+- **Persistent Selection**: Selected language saved to browser localStorage
+- **Context API Integration**: Global language state management via React Context
+- **Translation System**: Centralized translations in `lib/translations.ts`
+- **All UI Components**: Dashboard, forms, stats cards, and admin panel translated
+- **Documentation**: Multi-language support for all user-facing text
+
+### 🧩 Implementation Details
+- **LanguageContext**: React Context for global language state
+- **LanguageToggle Component**: UI component for language switching
+- **Translations Object**: Organized translation strings by section
+- **Dynamic Content**: All hardcoded strings converted to translation keys
+- **Type Safety**: Full TypeScript support for translation keys
+
+---
+
+## Version 3.0.1 - Documentation Organization & Configuration Centralization
+
+### 📚 Documentation Updates
+- **Organized Documentation**: Moved all docs to `docs/` folder for cleaner root
+- **Created Documentation Index**: New `DOCUMENTATION_INDEX.md` for easy navigation
+- **Updated README**: Simplified with links to docs folder
+- **Environment Template**: Updated `.env.local.example` with all configuration variables
+
+### ⚙️ Configuration Improvements
+- **Centralized Config**: All settings now configurable via environment variables
+- **Configuration Variables**: 
+  - Timing settings (cache TTL, refresh intervals, throttles)
+  - API settings (timeouts, retry logic)
+  - Behavior settings (UI refresh, milestone checks)
+- **Development vs Production**: Easy config profiles for different environments
+- **Documentation**: Complete guide in `ENV_VARIABLES_GUIDE.md`
+
+### 🧹 Code Cleanup
+- Removed redundant documentation files
+- Organized docs folder structure
+- Improved project organization
+
+---
+
 ## Version 3.0.0 - Admin Panel, Automated Milestones & Redis Migration
 
 ### 🚀 Major Features

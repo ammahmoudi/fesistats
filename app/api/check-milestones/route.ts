@@ -2,16 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSubscribers } from '@/lib/telegramSubscribers';
 import { detectMilestone, generateMilestoneMessage, shouldNotifyMilestone } from '@/lib/milestones';
 import { getLastNotifiedMilestone, setLastNotifiedMilestone } from '@/lib/milestoneStorage';
-import { saveStats, getCurrentStats, shouldRefreshStats } from '@/lib/statsStorage';
-
-interface PlatformStats {
-  platform: string;
-  count: number;
-  extraInfo?: {
-    views?: number;
-    videos?: number;
-  };
-}
+import { fetchAndSaveAllStats, type FetchedStats } from '@/lib/fetchers';
 
 async function sendTelegramBroadcast(message: string): Promise<{ total: number; successful: number; failed: number }> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -37,47 +28,9 @@ async function sendTelegramBroadcast(message: string): Promise<{ total: number; 
   return { total: subscribers.length, successful, failed: subscribers.length - successful };
 }
 
-async function fetchPlatformStats(): Promise<PlatformStats[]> {
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
-
-  try {
-    const [youtubeRes, telegramRes, instagramRes] = await Promise.allSettled([
-      fetch(`${baseUrl}/api/youtube`),
-      fetch(`${baseUrl}/api/telegram`),
-      fetch(`${baseUrl}/api/instagram`)
-    ]);
-
-    const stats: PlatformStats[] = [];
-
-    if (youtubeRes.status === 'fulfilled' && youtubeRes.value.ok) {
-      const data = await youtubeRes.value.json();
-      stats.push({ 
-        platform: 'YouTube', 
-        count: data.subscriberCount || 0,
-        extraInfo: {
-          views: data.viewCount || 0,
-          videos: data.videoCount || 0
-        }
-      });
-    }
-
-    if (telegramRes.status === 'fulfilled' && telegramRes.value.ok) {
-      const data = await telegramRes.value.json();
-      stats.push({ platform: 'Telegram', count: data.membersCount || 0 });
-    }
-
-    if (instagramRes.status === 'fulfilled' && instagramRes.value.ok) {
-      const data = await instagramRes.value.json();
-      stats.push({ platform: 'Instagram', count: data.followersCount || 0 });
-    }
-
-    return stats;
-  } catch (error) {
-    console.error('Error fetching platform stats:', error);
-    return [];
-  }
+async function fetchPlatformStats(): Promise<FetchedStats[]> {
+  // Use unified stats fetcher - handles fetching AND saving to Redis
+  return await fetchAndSaveAllStats();
 }
 
 /**
@@ -102,9 +55,7 @@ export async function GET() {
     }> = [];
 
     for (const { platform, count, extraInfo } of stats) {
-      // IMPORTANT: Save stats to persistent storage first
-      await saveStats(platform, count, extraInfo);
-      
+      // Stats are already saved by fetchAndSaveAllStats()
       const lastNotified = await getLastNotifiedMilestone(platform);
       
       // Store current stats

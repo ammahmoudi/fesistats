@@ -1,5 +1,6 @@
 // Redis storage for milestone tracking
 import { Redis } from '@upstash/redis';
+import { config } from './config';
 
 const MILESTONE_KEY_PREFIX = 'milestone:last:';
 const MILESTONE_HISTORY_PREFIX = 'milestone:history:';
@@ -46,8 +47,10 @@ export async function setLastNotifiedMilestone(platform: string, value: number):
     const client = getClient();
     const platformKey = platform.toLowerCase();
     
-    // Save to current milestone
-    await client.set(`${MILESTONE_KEY_PREFIX}${platformKey}`, value, { ex: 2592000 }); // 30 day TTL
+    // Save to current milestone with TTL from config
+    await client.set(`${MILESTONE_KEY_PREFIX}${platformKey}`, value, { 
+      ex: Math.round(config.MILESTONE_HISTORY_RETENTION / 1000) 
+    }); // From config
     
     // Save to milestone history
     const record: MilestoneRecord = {

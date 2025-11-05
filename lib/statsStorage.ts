@@ -1,5 +1,6 @@
 // Stats storage and history tracking with Redis
 import { Redis } from '@upstash/redis';
+import { config } from './config';
 
 interface StatSnapshot {
   platform: string;
@@ -50,7 +51,7 @@ export async function saveStats(
     const platformKey = platform.toLowerCase();
     const now = Date.now();
 
-    // Save current stats (with TTL of 24 hours for freshness)
+    // Save current stats (with TTL from config)
     await client.set(
       `${STATS_PREFIX}${platformKey}`,
       JSON.stringify({
@@ -60,7 +61,7 @@ export async function saveStats(
         videos: extraInfo?.videos,
         lastFetched: now,
       }),
-      { ex: 86400 } // 24 hour TTL
+      { ex: Math.round(config.STATS_CACHE_TTL / 1000) } // Convert to seconds
     );
 
     // Save to history (keep forever for historical analysis)
@@ -79,9 +80,9 @@ export async function saveStats(
       member: JSON.stringify(snapshot),
     });
 
-    // Clean up old history entries older than 90 days
-    const ninetyDaysAgo = now - 90 * 24 * 60 * 60 * 1000;
-    await client.zremrangebyscore(historyKey, 0, ninetyDaysAgo);
+    // Clean up old history entries based on config retention period
+    const retentionCutoff = now - config.STATS_HISTORY_RETENTION;
+    await client.zremrangebyscore(historyKey, 0, retentionCutoff);
 
     console.log(`✅ Saved stats for ${platform}: ${count}`);
   } catch (error) {
@@ -240,11 +241,11 @@ export async function getStatsTimeSeries(
 
 /**
  * Check if we need to refresh stats (based on age)
- * Returns true if stats are older than refreshInterval
+ * Returns true if stats are older than cache TTL
  */
 export async function shouldRefreshStats(
   platform: string,
-  refreshInterval: number = 5 * 60 * 1000 // Default 5 minutes
+  refreshInterval: number = config.STATS_CACHE_TTL // Default from config
 ): Promise<boolean> {
   try {
     const stats = await getCurrentStats(platform);

@@ -9,6 +9,7 @@ import { ExternalLink, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { FaYoutube, FaTelegram, FaInstagram } from "react-icons/fa";
 import { useLanguage } from "@/lib/LanguageContext";
+import { config } from "@/lib/config";
 
 interface StatsCardProps {
   platform: string;
@@ -41,7 +42,6 @@ export default function StatsCard({
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
-  const REFRESH_COOLDOWN = 30000; // 30 seconds cooldown
   const { t } = useLanguage();
 
   const Icon = iconMap[icon];
@@ -104,10 +104,10 @@ export default function StatsCard({
   useEffect(() => {
     fetchStats();
     
-    // Auto-refresh every 5 minutes
+    // Auto-refresh based on config interval
     const interval = setInterval(() => {
       fetchStats();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, config.AUTO_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, [platform]);
@@ -117,8 +117,8 @@ export default function StatsCard({
     const now = Date.now();
     const timeSinceLastRefresh = now - lastRefreshTime;
     
-    if (timeSinceLastRefresh < REFRESH_COOLDOWN) {
-      const remainingSeconds = Math.ceil((REFRESH_COOLDOWN - timeSinceLastRefresh) / 1000);
+    if (timeSinceLastRefresh < config.MANUAL_REFRESH_COOLDOWN) {
+      const remainingSeconds = Math.ceil((config.MANUAL_REFRESH_COOLDOWN - timeSinceLastRefresh) / 1000);
       toast.warning('Please wait', {
         description: `You can refresh again in ${remainingSeconds} seconds`,
       });
