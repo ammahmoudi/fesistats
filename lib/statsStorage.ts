@@ -1,6 +1,8 @@
 // Stats storage and history tracking with Redis
 import { Redis } from '@upstash/redis';
 import { config } from './config';
+import { shouldNotifyMilestone, generateMilestoneMessage, formatMilestone } from './milestones';
+import { getLastNotifiedMilestone, setLastNotifiedMilestone } from './milestoneStorage';
 
 interface StatSnapshot {
   platform: string;
@@ -40,6 +42,7 @@ function getClient(): Redis {
 /**
  * Save current stats snapshot for a platform
  * Stores both current count and historical data
+ * Automatically checks for milestone achievement and sends notifications
  */
 export async function saveStats(
   platform: string,
@@ -85,8 +88,128 @@ export async function saveStats(
     await client.zremrangebyscore(historyKey, 0, retentionCutoff);
 
     console.log(`✅ Saved stats for ${platform}: ${count}`);
+
+    // Automatically check for milestone achievement
+    await checkAndNotifyMilestone(platform, count);
   } catch (error) {
     console.error(`Error saving stats for ${platform}:`, error);
+  }
+}
+
+/**
+ * Check if a milestone was reached and send notifications
+ * Called automatically whenever stats are saved
+ */
+async function checkAndNotifyMilestone(
+  platform: string,
+  count: number
+): Promise<void> {
+  try {
+    // Get last notified milestone for this platform
+    const lastNotified = await getLastNotifiedMilestone(platform);
+
+    // Check if we should notify about a milestone
+    const milestone = shouldNotifyMilestone(count, lastNotified);
+
+    if (milestone) {
+      console.log(`🎉 Milestone detected for ${platform}: ${formatMilestone(milestone.value)}`);
+
+      // Update milestone with platform info
+      milestone.platform = platform;
+
+      // Generate celebration message
+      const celebrationMessage = generateMilestoneMessage(milestone);
+      const formattedMilestone = milestone.formatted;
+
+      // Prepare notification message
+      const message =
+        `🎉 <b>Milestone Reached!</b>\n\n` +
+        `📱 Platform: <b>${platform}</b>\n` +
+        `🎯 Milestone: <b>${formattedMilestone}</b>\n\n` +
+        `${celebrationMessage}\n\n` +
+        `Thank you for being part of this journey! 🙏\n\n` +
+        `🔗 Dashboard: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://fesistats.vercel.app'}`;
+
+      // Send notification to all subscribers
+      const notificationResult = await sendTelegramNotification(message);
+
+      if (notificationResult.success) {
+        console.log(
+          `✅ Milestone notification sent: ${notificationResult.delivered}/${notificationResult.total} subscribers`
+        );
+
+        // Save the milestone to prevent duplicate notifications
+        await setLastNotifiedMilestone(platform, milestone.value);
+      } else {
+        console.error(`❌ Failed to send milestone notification for ${platform}`);
+      }
+    }
+  } catch (error) {
+    console.error(`Error checking milestone for ${platform}:`, error);
+    // Don't throw - milestone checking shouldn't break stats saving
+  }
+}
+
+/**
+ * Send a notification message to all Telegram subscribers
+ */
+async function sendTelegramNotification(message: string): Promise<{
+  success: boolean;
+  total: number;
+  delivered: number;
+  failed: number;
+}> {
+  try {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) {
+      console.error('❌ TELEGRAM_BOT_TOKEN not configured');
+      return { success: false, total: 0, delivered: 0, failed: 0 };
+    }
+
+    // Get all subscribers
+    const subscribersResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/telegram-bot/subscribers`
+    );
+
+    if (!subscribersResponse.ok) {
+      console.error('❌ Failed to fetch subscribers');
+      return { success: false, total: 0, delivered: 0, failed: 0 };
+    }
+
+    const { subscribers } = await subscribersResponse.json();
+
+    if (!subscribers || subscribers.length === 0) {
+      console.log('ℹ️ No subscribers to notify');
+      return { success: true, total: 0, delivered: 0, failed: 0 };
+    }
+
+    // Send to all subscribers
+    const results = await Promise.allSettled(
+      subscribers.map((chatId: string) =>
+        fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: message,
+            parse_mode: 'HTML',
+          }),
+        })
+      )
+    );
+
+    const delivered = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
+
+    return {
+      success: delivered > 0,
+      total: subscribers.length,
+      delivered,
+      failed,
+    };
+  } catch (error) {
+    console.error('Error sending Telegram notification:', error);
+    return { success: false, total: 0, delivered: 0, failed: 0 };
   }
 }
 

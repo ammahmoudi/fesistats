@@ -173,7 +173,8 @@ fesistats/
 - Check /admin dashboard
 
 **Build errors?**
-- Clear .next: \m -rf .next\
+- Clear .next: \
+m -rf .next\
 - Reinstall: \
 pm install\
 - Check TypeScript: \
