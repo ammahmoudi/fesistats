@@ -103,13 +103,13 @@ All timing values are in the unit specified below. The system converts them to m
   2. Enable "YouTube Data API v3"
   3. Create an API Key
   4. Copy the key
-- **Example:** `YOUTUBE_API_KEY=AIzaSyBZ317gzv7fKi2NR0AoZwwQ7_GuC3-15Nk`
+- **Example:** `YOUTUBE_API_KEY=AC3-15Nk`
 
 #### `YOUTUBE_CHANNEL_ID`
 - **Required:** Yes
 - **Where to get:** YouTube channel URL like `https://www.youtube.com/@itzfesi`
 - **Find it:** View page source and search for `"channelId"`
-- **Example:** `YOUTUBE_CHANNEL_ID=UCjtHa7VGxtqw41Uv5RhKQAg`
+- **Example:** `YOUTUBE_CHANNEL_ID=Usjaixjs`
 
 ### Telegram
 
@@ -121,7 +121,7 @@ All timing values are in the unit specified below. The system converts them to m
 #### `TELEGRAM_BOT_TOKEN`
 - **Required:** Yes (only if using bot features)
 - **Where to get:** BotFather on Telegram
-- **Example:** `TELEGRAM_BOT_TOKEN=8496002805:AAGPNaXUssddAuVNzCOoJ87_mRNeAjR7lDk`
+- **Example:** `TELEGRAM_BOT_TOKEN=8egDk`
 
 ### Instagram
 
@@ -142,7 +142,7 @@ All timing values are in the unit specified below. The system converts them to m
 - **Required:** Yes
 - **Description:** Upstash Redis REST API token
 - **Where to get:** [Upstash Console](https://console.upstash.com)
-- **Example:** `KV_REST_API_TOKEN=AUxpAAIncDI3ZjNjMGM2ZmYwMzM0ZGUxODlhNDFjMWI5YzUxODBlYXAyMTk1NjE`
+- **Example:** `KV_REST_API_TOKEN=AU1NjE`
 
 #### `KV_URL` (Optional)
 - **Required:** No
@@ -326,3 +326,4 @@ A: Yes! Update `.env.local` and redeploy. Next deployment will use new values.
 
 **Q: What's the optimal refresh interval?**
 A: Default 5 minutes is optimal for most use cases. Only lower if you need live updates.
+
