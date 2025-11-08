@@ -38,6 +38,7 @@ export async function fetchAndSaveAllStats() {
   ]);
 
   const successfulStats = [];
+  const failedPlatforms = [];
 
   for (const result of results) {
     if (result.status === 'fulfilled' && result.value) {
@@ -50,7 +51,15 @@ export async function fetchAndSaveAllStats() {
       } catch (error) {
         console.error(`❌ Failed to save ${stats.platform}:`, error);
       }
+    } else if (result.status === 'rejected') {
+      failedPlatforms.push(`rejected: ${result.reason}`);
+    } else if (result.status === 'fulfilled' && result.value === null) {
+      failedPlatforms.push('returned null');
     }
+  }
+
+  if (failedPlatforms.length > 0) {
+    console.log(`⚠️  ${failedPlatforms.length} platform(s) failed:`, failedPlatforms);
   }
 
   return successfulStats;

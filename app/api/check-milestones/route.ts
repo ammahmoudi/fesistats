@@ -30,7 +30,9 @@ async function sendTelegramBroadcast(message: string): Promise<{ total: number; 
 
 async function fetchPlatformStats(): Promise<FetchedStats[]> {
   // Use unified stats fetcher - handles fetching AND saving to Redis
-  return await fetchAndSaveAllStats();
+  const stats = await fetchAndSaveAllStats();
+  console.log(`📊 Successfully fetched stats for ${stats.length} platform(s):`, stats.map(s => s.platform).join(', '));
+  return stats;
 }
 
 /**

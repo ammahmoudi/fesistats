@@ -151,6 +151,24 @@ export async function GET(request: Request) {
     }
 
     // No methods available or all failed
+    // Try fallback manual count if configured
+    const manualCount = process.env.INSTAGRAM_FOLLOWER_COUNT;
+    if (manualCount) {
+      const count = parseInt(manualCount, 10);
+      if (!isNaN(count)) {
+        console.log(`📊 Using fallback Instagram follower count: ${count}`);
+        await saveStats('Instagram', count);
+        
+        return NextResponse.json({
+          followersCount: count,
+          lastUpdated: new Date().toISOString(),
+          source: 'manual-fallback',
+        });
+      }
+    }
+
+    // No methods available or all failed
+    console.error('Instagram: All fetch methods failed');
     return NextResponse.json(
       { 
         error: 'Instagram data unavailable',
