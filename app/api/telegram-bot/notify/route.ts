@@ -145,8 +145,20 @@ export async function POST(request: Request) {
 
     console.log(`📨 Broadcast request received - Platform: ${platform}, Template: ${template}, Has Image: ${!!imageUrl}`);
 
-    // Get the base URL for image resolution - prioritize custom domain
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir';
+    // Get the base URL for image resolution
+    // In production: use NEXT_PUBLIC_APP_URL or fallback to custom domain
+    // In development: construct from headers to get correct port
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir';
+    
+    // If we're in development and imageUrl needs absolute path, use request headers
+    if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+      const host = request.headers.get('host');
+      const protocol = request.headers.get('x-forwarded-proto') || 'http';
+      if (host) {
+        baseUrl = `${protocol}://${host}`;
+        console.log(`🔗 Using request-based URL: ${baseUrl}`);
+      }
+    }
 
     let result;
 
@@ -168,13 +180,25 @@ export async function POST(request: Request) {
     } else {
       // Custom message mode
       if (imageUrl) {
-        // Get absolute URL for image
-        const absoluteImageUrl = imageUrl.startsWith('http') 
-          ? imageUrl 
-          : baseUrl + imageUrl;
+        // Handle different types of image URLs
+        let resolvedImageUrl = imageUrl;
+        
+        if (imageUrl.startsWith('data:')) {
+          // Base64 data URL - use as is
+          console.log(`📸 Using base64 data URL`);
+          resolvedImageUrl = imageUrl;
+        } else if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+          // Absolute URL - use as is
+          console.log(`📸 Using absolute URL: ${imageUrl}`);
+          resolvedImageUrl = imageUrl;
+        } else {
+          // Relative path - make it absolute
+          resolvedImageUrl = baseUrl + (imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl);
+          console.log(`📸 Converted relative path to: ${resolvedImageUrl}`);
+        }
 
         console.log(`📸 Sending custom photo message`);
-        result = await broadcastPhoto(absoluteImageUrl, message);
+        result = await broadcastPhoto(resolvedImageUrl, message);
       } else {
         console.log(`💬 Sending custom text message`);
         result = await broadcastMessage(message);
