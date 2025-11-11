@@ -30,11 +30,20 @@ export async function GET(request: Request) {
       
       const history: Record<string, any[]> = {};
 
-      for (const [plat, value] of Object.entries(allMilestones)) {
+      // Always fetch for all known platforms, not just ones with last notified
+      const platforms = ['youtube', 'telegram', 'instagram'];
+      
+      for (const plat of platforms) {
         console.log(`  🔍 Fetching history for ${plat}...`);
         const platformHistory = await getMilestoneHistory(plat, 50);
         console.log(`  ✅ Got ${platformHistory.length} records for ${plat}`);
-        history[plat] = platformHistory;
+        
+        // Only include platforms that have history data
+        if (platformHistory.length > 0) {
+          // Use the platform name from the first record (capitalized properly)
+          const platformName = platformHistory[0]?.platform || plat;
+          history[platformName] = platformHistory;
+        }
       }
 
       console.log(`✅ Returning milestone history with ${Object.keys(history).length} platforms`);

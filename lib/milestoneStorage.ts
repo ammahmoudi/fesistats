@@ -109,13 +109,19 @@ export async function getMilestoneHistory(platform: string, limit: number = 50):
     console.log(`✅ Got ${records.length} raw records for ${platform}`);
     
     const parsed = records
-      .map((item: string) => {
+      .map((item: any) => {
         try {
+          // Check if item is already an object (Redis auto-parsed it)
+          if (typeof item === 'object' && item !== null) {
+            console.log(`  ✓ Already parsed: ${JSON.stringify(item)}`);
+            return item as MilestoneRecord;
+          }
+          // Otherwise parse the string
           const parsed = JSON.parse(item);
           console.log(`  ✓ Parsed: ${JSON.stringify(parsed)}`);
           return parsed;
         } catch (e) {
-          console.warn(`  ✗ Failed to parse: ${item}`);
+          console.warn(`  ✗ Failed to parse: ${typeof item === 'object' ? JSON.stringify(item) : item}`);
           return null;
         }
       })
