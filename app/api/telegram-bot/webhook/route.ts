@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { addSubscriber, removeSubscriber, isSubscribed, getSubscriberCount } from '@/lib/telegramSubscribers';
+import { addSubscriber, removeSubscriber, isSubscribed, getSubscriberCount, setUserInfo } from '@/lib/telegramSubscribers';
 
 // Send message via Telegram API
 async function sendTelegramMessage(chatId: number, text: string) {
@@ -48,7 +48,25 @@ export async function POST(request: Request) {
     const chatId = body.message.chat.id;
     const text: string = body.message.text || '';
     const firstName = body.message.from?.first_name || 'there';
+    const lastName = body.message.from?.last_name;
+    const username = body.message.from?.username;
+    const isBot = body.message.from?.is_bot || false;
+    
     console.log(`Telegram update from ${chatId}: ${text}`);
+
+    // Store user information for later retrieval
+    try {
+      await setUserInfo({
+        id: chatId,
+        first_name: firstName,
+        last_name: lastName,
+        username: username,
+        is_bot: isBot
+      });
+    } catch (error) {
+      console.error('Failed to store user info:', error);
+      // Continue anyway
+    }
 
     if (text.startsWith('/start')) {
       const already = await isSubscribed(chatId);

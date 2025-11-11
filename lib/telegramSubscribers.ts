@@ -4,6 +4,18 @@
 import { Redis } from '@upstash/redis';
 
 const REDIS_SUBSCRIBERS_KEY = 'telegram:subscribers';
+const REDIS_USER_INFO_PREFIX = 'telegram:user:';
+
+// User info interface
+export interface TelegramUserInfo {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  is_bot?: boolean;
+  updated_at: number;
+}
 
 // Initialize lazily to allow build without env vars locally
 let redis: Redis | null = null;
@@ -45,3 +57,44 @@ export async function getSubscriberCount(): Promise<number> {
   return await getClient().scard(REDIS_SUBSCRIBERS_KEY);
 }
 
+// Store user information
+export async function setUserInfo(userInfo: Omit<TelegramUserInfo, 'updated_at'>): Promise<void> {
+  const key = `${REDIS_USER_INFO_PREFIX}${userInfo.id}`;
+  const data: TelegramUserInfo = {
+    ...userInfo,
+    updated_at: Date.now()
+  };
+  await getClient().set(key, JSON.stringify(data), { ex: 86400 * 30 }); // 30 days TTL
+}
+
+// Get user information
+export async function getUserInfo(chatId: number): Promise<TelegramUserInfo | null> {
+  const key = `${REDIS_USER_INFO_PREFIX}${chatId}`;
+  const data = await getClient().get(key);
+  if (!data) return null;
+  
+  try {
+    if (typeof data === 'string') {
+      return JSON.parse(data) as TelegramUserInfo;
+    }
+    return data as TelegramUserInfo;
+  } catch {
+    return null;
+  }
+}
+
+// Get multiple users' information
+export async function getUsersInfo(chatIds: number[]): Promise<Map<number, TelegramUserInfo>> {
+  const result = new Map<number, TelegramUserInfo>();
+  
+  // Fetch all user info in parallel
+  const promises = chatIds.map(async (chatId) => {
+    const info = await getUserInfo(chatId);
+    if (info) {
+      result.set(chatId, info);
+    }
+  });
+  
+  await Promise.all(promises);
+  return result;
+}

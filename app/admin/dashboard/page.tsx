@@ -221,8 +221,11 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Stats Card */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+        {/* Stats Card - Clickable */}
+        <Card 
+          className="bg-white/10 backdrop-blur-md border-white/20 cursor-pointer hover:bg-white/15 transition-all duration-300 hover:scale-102"
+          onClick={() => router.push('/admin/subscribers')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -233,6 +236,9 @@ export default function AdminDashboard() {
                   <p className="text-sm text-gray-400">{t('totalSubscribers')}</p>
                   <p className="text-3xl font-bold text-white">
                     {subscriberCount !== null ? subscriberCount : '...'}
+                  </p>
+                  <p className="text-xs text-pink-300 mt-1">
+                    {t('clickToViewStats')}
                   </p>
                 </div>
               </div>

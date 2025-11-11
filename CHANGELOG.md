@@ -1,7 +1,156 @@
 # Changelog
 
-````markdown
-# Changelog
+## Version 3.4.0 - Subscriber Management System
+
+### 🎉 New Features
+
+#### Admin Subscriber Management (`/admin/subscribers`)
+- **Subscriber List View**: Beautiful grid layout showing all bot subscribers
+- **User Profiles**: Display names, usernames, profile photos, and IDs
+- **Smart Data Caching**: User info cached in Redis for 30 days
+- **Real-time Search**: Filter subscribers by name, username, or ID
+- **Contact Integration**: Click any card to open Telegram chat with user
+- **Profile Photos**: Fetches and displays user avatars from Telegram
+- **Graceful Fallbacks**: Gradient avatars when photos unavailable
+
+#### Intelligent Data Fetching
+- **Two-Layer System**:
+  1. **Cached Data** (Primary): User info stored when they interact with bot
+  2. **Telegram API** (Fallback): Fetches data for uncached users
+- **Webhook Integration**: Automatically captures user info on bot interactions
+- **Batch Processing**: Fetches multiple users in parallel (5 at a time)
+- **Timeout Protection**: 5-second timeout on API calls prevents hanging
+- **Rate Limiting**: 100ms delay between batches respects Telegram limits
+
+#### User Experience Improvements
+- **Clickable Cards**: Hover effect with message icon indicator
+- **Smart Links**: 
+  - Users with username: `https://t.me/username`
+  - Users without: `tg://user?id=123456` (deep link)
+- **Visual Indicators**: Message icon appears on hover
+- **Loading States**: Skeleton animations and progress indicators
+- **Empty States**: Friendly messages when no subscribers
+- **Responsive Design**: Works perfectly on mobile, tablet, desktop
+
+#### Admin Dashboard Integration
+- **Clickable Stats Card**: Subscriber count card now navigates to subscriber list
+- **Hover Effects**: Visual feedback showing it's clickable
+- **Quick Access**: One click from dashboard to subscriber management
+- **Live Count**: Real-time subscriber count updates
+
+### 🌍 Internationalization
+- **Multi-Language Support**: Full translations for subscriber management
+- **17 New Translation Keys**: 
+  - English: subscribersManagement, searchSubscribers, userName, etc.
+  - Persian: مدیریت مشترکین, جستجوی مشترکین, نام کاربر, etc.
+- **Context-Aware**: All UI text properly localized
+
+### 🔧 Technical Implementation
+
+#### Files Added
+```
+app/admin/subscribers/page.tsx               # Subscriber management UI
+app/api/telegram-bot/subscribers/details/route.ts  # User data API endpoint
+```
+
+#### Files Modified
+```
+lib/telegramSubscribers.ts                   # Added user info storage functions
+app/api/telegram-bot/webhook/route.ts        # Added user data capture
+app/admin/dashboard/page.tsx                 # Made stats card clickable
+lib/translations.ts                          # Added 17 new translation keys
+```
+
+#### New Functions
+- `setUserInfo()`: Store user information in Redis
+- `getUserInfo()`: Retrieve single user's cached data
+- `getUsersInfo()`: Batch retrieve multiple users' data
+- `getTelegramUserInfo()`: Fetch user data from Telegram API with timeouts
+
+### 🎨 Design Features
+- **Grid Layout**: 3-column responsive grid for subscriber cards
+- **Profile Display**:
+  - 64x64 rounded avatars with border
+  - Gradient fallback icons (pink to purple)
+  - Name and username display
+  - Subscriber ID with monospace font
+- **Badges**:
+  - "Bot User" badge for bot accounts (yellow)
+  - "Joined via Telegram Bot" badge (green)
+- **Search Bar**: Prominent search with icon and real-time filtering
+- **Stats Card**: Shows total count with helpful tip
+
+### 🚀 Performance Optimizations
+- **Redis Caching**: 30-day TTL for user info reduces API calls
+- **Batch Fetching**: Process 5 users at a time in parallel
+- **Timeout Handling**: Prevents slow API calls from blocking page
+- **Progressive Loading**: Show cached users immediately, fetch others in background
+- **Rate Limiting**: Respects Telegram's rate limits (100ms between batches)
+
+### 📊 API Response Format
+```json
+{
+  "success": true,
+  "count": 5,
+  "subscribers": [...],
+  "cached": 3,    // Users loaded from Redis
+  "fetched": 2    // Users fetched from Telegram API
+}
+```
+
+### 🔒 Security & Privacy
+- **Admin Authentication**: Requires admin token for access
+- **Privacy Respecting**: Only stores data users voluntarily share
+- **Secure Links**: Uses Telegram's official link formats
+- **No Permanent Storage**: Profile photos fetched on-demand (not stored)
+- **Cache Expiry**: User data expires after 30 days
+
+### 🎯 User Data Flow
+```
+User interacts with bot (/start, /stop, /status)
+    ↓
+Webhook captures user info (name, username, etc.)
+    ↓
+Data stored in Redis with 30-day TTL
+    ↓
+Admin views subscribers page
+    ↓
+Check Redis cache first (fast)
+    ↓
+If not cached, fetch from Telegram API (with timeout)
+    ↓
+Display in grid with search functionality
+```
+
+### 📱 Contact Feature
+- **Click-to-Message**: Click any subscriber card to open chat
+- **Smart Routing**:
+  - If username exists: Opens web/app via `https://t.me/username`
+  - If no username: Opens app via deep link `tg://user?id=123456`
+- **Visual Feedback**: Message icon appears on hover
+- **Tooltip**: Shows "Click to contact [Name] on Telegram"
+
+### 🐛 Bug Fixes
+- **Timeout Errors**: Fixed connection timeouts with abort controllers
+- **Empty Names**: Shows "User #[ID]" for users without cached data
+- **Photo Loading**: Graceful fallback when images fail to load
+- **Search Performance**: Optimized filtering with useMemo
+
+### 📖 Documentation
+- Added inline comments explaining data flow
+- Type definitions for all user data structures
+- Environment variable documentation
+- Usage examples in code
+
+### 🎉 Current Feature Status
+- ✅ **YouTube**: Live data with YouTube Data API v3
+- ✅ **Telegram**: Live stats + Bot notifications + Subscriber management
+- ✅ **Instagram**: Live data with internal API
+- ✅ **Admin Panel**: Full control dashboard with subscriber management
+- ✅ **Automated Milestones**: Real-time detection
+- ✅ **Multi-Language**: English + Persian support
+
+---
 
 ## Version 3.3.0 - Statistics Dashboard & Data Pipeline Fixes
 

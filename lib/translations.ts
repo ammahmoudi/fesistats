@@ -250,6 +250,27 @@ export const translations = {
     historicalDataKept: "✓ Historical data is kept for 90 days for analysis",
     cachedStats: "✓ Stats are fetched from cache when possible (minimal API calls)",
     forceRefreshAvailable: "✓ Force refresh still available for real-time updates",
+    
+    // Subscribers Management
+    subscribersManagement: "Subscribers Management",
+    subscribersManagementDesc: "View and manage all Telegram bot subscribers",
+    totalBotSubscribers: "Total Bot Subscribers",
+    searchSubscribers: "Search subscribers...",
+    searchByName: "Search by name, username, or ID",
+    noSubscribersYet: "No Subscribers Yet",
+    noSubscribersMessage: "No users have subscribed to the bot yet.",
+    loadingSubscribers: "Loading subscribers...",
+    subscriberId: "Subscriber ID",
+    userName: "User Name",
+    telegramUsername: "Telegram Username",
+    joinedVia: "Joined via Telegram Bot",
+    botUser: "Bot User",
+    noResults: "No results found",
+    tryDifferentSearch: "Try a different search term",
+    viewingSubscribers: "Viewing {count} subscriber(s)",
+    failedToLoad: "Failed to load subscribers",
+    refreshSubscribers: "Refresh Subscribers",
+    updateProfileTip: "💡 Tip: Ask users to send /status to the bot to update their info",
   },
   
   fa: {
@@ -503,6 +524,27 @@ export const translations = {
     historicalDataKept: "✓ داده‌های تاریخی برای 90 روز نگهداری می‌شوند",
     cachedStats: "✓ آمار هنگام ممکن از حافظه کش واکشی می‌شوند",
     forceRefreshAvailable: "✓ بروزرسانی فوری برای به‌روزرسانی بلادرنگ در دسترس است",
+    
+    // Subscribers Management
+    subscribersManagement: "مدیریت مشترکین",
+    subscribersManagementDesc: "مشاهده و مدیریت تمام مشترکین ربات تلگرام",
+    totalBotSubscribers: "کل مشترکین ربات",
+    searchSubscribers: "جستجوی مشترکین...",
+    searchByName: "جستجو بر اساس نام، نام کاربری یا شناسه",
+    noSubscribersYet: "هنوز مشترکی نیست",
+    noSubscribersMessage: "هیچ کاربری هنوز به ربات مشترک نشده است.",
+    loadingSubscribers: "در حال بارگذاری مشترکین...",
+    subscriberId: "شناسه مشترک",
+    userName: "نام کاربر",
+    telegramUsername: "نام کاربری تلگرام",
+    joinedVia: "عضویت از طریق ربات تلگرام",
+    botUser: "کاربر ربات",
+    noResults: "نتیجه‌ای یافت نشد",
+    tryDifferentSearch: "عبارت جستجوی دیگری امتحان کنید",
+    viewingSubscribers: "نمایش {count} مشترک",
+    failedToLoad: "بارگذاری مشترکین ناموفق بود",
+    refreshSubscribers: "بروزرسانی مشترکین",
+    updateProfileTip: "💡 نکته: از کاربران بخواهید /status را به ربات ارسال کنند تا اطلاعاتشان بروز شود",
   }
 };
 

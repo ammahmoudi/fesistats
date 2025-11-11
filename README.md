@@ -14,6 +14,7 @@ A real-time statistics dashboard for ItzFesi showcasing live follower counts acr
 - ⚡ **Server-Side Caching**: 24-hour cache with configurable TTL
 - 📈 **Historical Analytics**: 100+ data points per platform retained
 - 💾 **Redis Persistence**: All stats persisted to Upstash Redis
+- 👥 **Subscriber Management**: Full admin interface for bot subscribers
 
 ### 📊 Advanced Statistics Dashboard (`/stats`)
 
@@ -32,7 +33,9 @@ A real-time statistics dashboard for ItzFesi showcasing live follower counts acr
 - **User Subscription**: Subscribe via /start command
 - **Bot Commands**: /start, /stop, /status
 - **Persistent Storage**: Upstash Redis for subscriber management
+- **User Data Caching**: Names, usernames, and profile photos cached for 30 days
 - **Automated Webhooks**: Auto-configuration after deployments
+- **Smart Contact System**: Click-to-message integration in admin panel
 
 ### 🎯 Automated Milestone Notifications
 
@@ -58,6 +61,12 @@ A real-time statistics dashboard for ItzFesi showcasing live follower counts acr
 ### 🔐 Admin Dashboard (`/admin`)
 
 - **Secure Token Authentication**: Generate via environment variable
+- **Subscriber Management** (`/admin/subscribers`): 
+  - View all bot subscribers with profiles
+  - Search by name, username, or ID
+  - Click to contact users on Telegram
+  - Profile photos and user information
+  - Cached data for performance
 - **Broadcast Control**: Send notifications to all subscribers manually
 - **Milestone Management**: View milestone history with timestamps
 - **Current Stats**: See live counts with extra info (YouTube views/videos)
@@ -228,4 +237,4 @@ ISC - Personal project for @ItzFesi
 
 ---
 
-**Version:** 3.0.0 | **Status:** Production Ready ✅
+**Version:** 3.4.0 | **Status:** Production Ready ✅
