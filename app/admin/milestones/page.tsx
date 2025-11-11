@@ -167,55 +167,6 @@ export default function MilestonesPage() {
           </div>
         </div>
 
-        {/* Info Card */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
-          <CardHeader>
-            <CardTitle className="text-2xl text-white flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-pink-300" />
-              {t('howItWorksMillestones')}
-            </CardTitle>
-            <CardDescription className="text-gray-300">
-              {t('automaticNotifications')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-gray-300 space-y-4">
-            <div>
-              <h3 className="text-white font-semibold mb-2">{t('trackedMilestonesTitle')}</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>{t('everyOneK')}</li>
-                <li>{t('everyFiveK')}</li>
-                <li>{t('majorMilestones')}</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-2">{t('automatedCheckingMethods')}</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-start gap-2">
-                  <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 shrink-0">{t('clientSideLabel')}</Badge>
-                  <span>{t('clientSideCheckText')}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30 shrink-0">{t('githubActionsLabel')}</Badge>
-                  <span>{t('githubActionsCheckText')}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30 shrink-0">{t('vercelCronLabel')}</Badge>
-                  <span>{t('vercelCronCheckText')}</span>
-                </div>
-                <p className="text-xs text-gray-400 mt-2 pl-2 border-l-2 border-white/20">
-                  {t('reliabilityNote')}
-                </p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-2">{t('notificationsLabelMilestone')}</h3>
-              <p className="text-sm">
-                {t('notificationsTextMilestone')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Manual Check Card */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardHeader>
@@ -328,50 +279,6 @@ export default function MilestonesPage() {
           </CardContent>
         </Card>
 
-        {/* Check Schedule Details */}
-        <Card className="bg-white/10 backdrop-blur-md border-white/20">
-          <CardHeader>
-            <CardTitle className="text-xl text-white">⏰ {t('checkScheduleTitle')}</CardTitle>
-            <CardDescription className="text-gray-300">
-              {t('checkScheduleDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/30">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-white font-medium">{t('clientSidePollingTitle')}</p>
-                <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30">{t('clientSidePollingStatus')}</Badge>
-              </div>
-              <p className="text-xs text-gray-300">{t('clientSidePollingDesc')}</p>
-              <p className="text-xs text-gray-400 mt-1">{t('clientSidePollingFeatures')}</p>
-            </div>
-
-            <div className="bg-purple-500/10 rounded-lg p-3 border border-purple-500/30">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-white font-medium">{t('githubActionsPollingTitle')}</p>
-                <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">{t('githubActionsFrequency')}</Badge>
-              </div>
-              <p className="text-xs text-gray-300">{t('githubActionsPollingDesc')}</p>
-              <p className="text-xs text-gray-400 mt-1">{t('githubActionsPollingFeatures')}</p>
-            </div>
-
-            <div className="bg-pink-500/10 rounded-lg p-3 border border-pink-500/30">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-white font-medium">{t('vercelCronPollingTitle')}</p>
-                <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30">{t('vercelCronFrequency')}</Badge>
-              </div>
-              <p className="text-xs text-gray-300">{t('vercelCronPollingDesc')}</p>
-              <p className="text-xs text-gray-400 mt-1">{t('vercelCronPollingFeatures')}</p>
-            </div>
-
-            <div className="bg-white/5 rounded-lg p-3 border border-white/10 mt-3">
-              <p className="text-xs text-gray-400 text-center">
-                {t('proTip')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Milestone History */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardHeader>
@@ -443,6 +350,99 @@ export default function MilestonesPage() {
                   {loadingHistory ? t('loading') : t('noMilestonesRecorded')}
                 </p>
               )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Info Card */}
+        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <CardHeader>
+            <CardTitle className="text-2xl text-white flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-pink-300" />
+              {t('howItWorksMillestones')}
+            </CardTitle>
+            <CardDescription className="text-gray-300">
+              {t('automaticNotifications')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-gray-300 space-y-4">
+            <div>
+              <h3 className="text-white font-semibold mb-2">{t('trackedMilestonesTitle')}</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>{t('everyOneK')}</li>
+                <li>{t('everyFiveK')}</li>
+                <li>{t('majorMilestones')}</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-2">{t('automatedCheckingMethods')}</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 shrink-0">{t('clientSideLabel')}</Badge>
+                  <span>{t('clientSideCheckText')}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30 shrink-0">{t('githubActionsLabel')}</Badge>
+                  <span>{t('githubActionsCheckText')}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30 shrink-0">{t('vercelCronLabel')}</Badge>
+                  <span>{t('vercelCronCheckText')}</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-2 pl-2 border-l-2 border-white/20">
+                  {t('reliabilityNote')}
+                </p>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold mb-2">{t('notificationsLabelMilestone')}</h3>
+              <p className="text-sm">
+                {t('notificationsTextMilestone')}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Check Schedule Details */}
+        <Card className="bg-white/10 backdrop-blur-md border-white/20">
+          <CardHeader>
+            <CardTitle className="text-xl text-white">⏰ {t('checkScheduleTitle')}</CardTitle>
+            <CardDescription className="text-gray-300">
+              {t('checkScheduleDescription')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/30">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-white font-medium">{t('clientSidePollingTitle')}</p>
+                <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30">{t('clientSidePollingStatus')}</Badge>
+              </div>
+              <p className="text-xs text-gray-300">{t('clientSidePollingDesc')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('clientSidePollingFeatures')}</p>
+            </div>
+
+            <div className="bg-purple-500/10 rounded-lg p-3 border border-purple-500/30">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-white font-medium">{t('githubActionsPollingTitle')}</p>
+                <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">{t('githubActionsFrequency')}</Badge>
+              </div>
+              <p className="text-xs text-gray-300">{t('githubActionsPollingDesc')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('githubActionsPollingFeatures')}</p>
+            </div>
+
+            <div className="bg-pink-500/10 rounded-lg p-3 border border-pink-500/30">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-white font-medium">{t('vercelCronPollingTitle')}</p>
+                <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/30">{t('vercelCronFrequency')}</Badge>
+              </div>
+              <p className="text-xs text-gray-300">{t('vercelCronPollingDesc')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('vercelCronPollingFeatures')}</p>
+            </div>
+
+            <div className="bg-white/5 rounded-lg p-3 border border-white/10 mt-3">
+              <p className="text-xs text-gray-400 text-center">
+                {t('proTip')}
+              </p>
             </div>
           </CardContent>
         </Card>
