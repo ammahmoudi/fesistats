@@ -257,21 +257,32 @@ export default function StatsPage() {
       const date = new Date(timestamp);
       
       if (timeRange === 'day') {
-        // For day view: show HH:MM format
-        return date.toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: true
-        }).replace(/^0/, ''); // Remove leading zero
-      } else if (timeRange === 'week') {
-        // For week view: show day name and time
-        const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        // For day view: Add day indicator to avoid duplicate times across midnight
+        const now = new Date();
+        const isToday = date.toDateString() === now.toDateString();
         const time = date.toLocaleTimeString('en-US', { 
           hour: '2-digit', 
           minute: '2-digit',
           hour12: true
         }).replace(/^0/, ''); // Remove leading zero
-        return `${day} ${time}`;
+        
+        // Add day prefix for yesterday/tomorrow to make times unique
+        if (!isToday) {
+          const dayDiff = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          if (dayDiff < 0) return `Yest ${time}`;
+          if (dayDiff > 0) return `Tom ${time}`;
+        }
+        return time;
+      } else if (timeRange === 'week') {
+        // For week view: show day name with date number to avoid duplicates across weeks
+        const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateNum = date.getDate(); // Get day of month (1-31)
+        const time = date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, ''); // Remove leading zero
+        return `${day} ${dateNum} ${time}`;
       } else {
         // For month view: show date and time
         const monthDay = date.toLocaleDateString('en-US', {
@@ -356,21 +367,32 @@ export default function StatsPage() {
       const date = new Date(timestamp);
       
       if (timeRange === 'day') {
-        // For day view: show HH:MM format (matches buildChartData)
-        return date.toLocaleTimeString('en-US', { 
+        // For day view: Add day indicator to avoid duplicate times across midnight
+        const now = new Date();
+        const isToday = date.toDateString() === now.toDateString();
+        const time = date.toLocaleTimeString('en-US', { 
           hour: '2-digit', 
           minute: '2-digit',
           hour12: true
         }).replace(/^0/, ''); // Remove leading zero if present
+        
+        // Add day prefix for yesterday/tomorrow to make times unique
+        if (!isToday) {
+          const dayDiff = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          if (dayDiff < 0) return `Yest ${time}`;
+          if (dayDiff > 0) return `Tom ${time}`;
+        }
+        return time;
       } else if (timeRange === 'week') {
-        // For week view: show day name and time - EXACT same format as formatTime
+        // For week view: show day name with date number to avoid duplicates across weeks
         const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateNum = date.getDate(); // Get day of month (1-31)
         const time = date.toLocaleTimeString('en-US', { 
           hour: '2-digit', 
           minute: '2-digit',
           hour12: true
         }).replace(/^0/, ''); // Remove leading zero
-        return `${day} ${time}`;
+        return `${day} ${dateNum} ${time}`;
       } else {
         // For month view: show date and time
         const monthDay = date.toLocaleDateString('en-US', {
@@ -433,6 +455,7 @@ export default function StatsPage() {
     
     console.log(`📊 Final chart data points: ${data.length}`);
     console.log(`📊 Sample final times:`, data.slice(0, 3).map(d => d.time));
+    console.log(`📊 Timestamps in order check:`, data.slice(0, 5).map(d => ({ time: d.time, ts: d.timestamp })));
     
     return data;
   };
@@ -554,19 +577,31 @@ export default function StatsPage() {
       const date = new Date(timestamp);
       
       if (timeRange === 'day') {
-        return date.toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: true
-        }).replace(/^0/, ''); // Remove leading zero
-      } else if (timeRange === 'week') {
-        const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        // For day view: Add day indicator to avoid duplicate times across midnight
+        const now = new Date();
+        const isToday = date.toDateString() === now.toDateString();
         const time = date.toLocaleTimeString('en-US', { 
           hour: '2-digit', 
           minute: '2-digit',
           hour12: true
         }).replace(/^0/, ''); // Remove leading zero
-        return `${day} ${time}`;
+        
+        // Add day prefix for yesterday/tomorrow to make times unique
+        if (!isToday) {
+          const dayDiff = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          if (dayDiff < 0) return `Yest ${time}`;
+          if (dayDiff > 0) return `Tom ${time}`;
+        }
+        return time;
+      } else if (timeRange === 'week') {
+        const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateNum = date.getDate(); // Get day of month (1-31)
+        const time = date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, ''); // Remove leading zero
+        return `${day} ${dateNum} ${time}`;
       } else {
         const monthDay = date.toLocaleDateString('en-US', {
           month: 'short',
@@ -604,6 +639,16 @@ export default function StatsPage() {
       
       console.log(`   Found start point: ${!!startPoint}`);
       if (endTime) console.log(`   Found end point: ${!!endPoint}`);
+      
+      if (!startPoint) {
+        console.log(`   ❌ Could not find start time in chart!`);
+        console.log(`   Looking for: "${startTime}"`);
+        console.log(`   Available times near this:`, chartData.slice(0, 5).map(p => `"${p.time}"`));
+      }
+      if (endTime && !endPoint) {
+        console.log(`   ❌ Could not find end time in chart!`);
+        console.log(`   Looking for: "${endTime}"`);
+      }
       
       const startYouTube = startPoint?.YouTube || 0;
       const endYouTube = endPoint?.YouTube || startYouTube;
@@ -761,6 +806,15 @@ export default function StatsPage() {
                   
                   {/* Stream markers - shaded regions for completed, vertical lines for ongoing */}
                   {streamMarkers.map((stream, idx) => {
+                    if (idx === 0) {
+                      console.log('🎨 RENDERING FIRST MARKER:', {
+                        startTime: stream.startTime,
+                        endTime: stream.endTime,
+                        existsInChart: chartData.some(p => p.time === stream.startTime),
+                        chartDataLength: chartData.length,
+                        timeRange
+                      });
+                    }
                     return stream.endTime ? (
                       // Completed stream - show shaded area (using interpolated exact times)
                       <ReferenceArea
@@ -771,6 +825,7 @@ export default function StatsPage() {
                         fillOpacity={0.15}
                         stroke="#EF4444"
                         strokeOpacity={0.5}
+                        ifOverflow="visible"
                         label={{
                           value: stream.isLive ? '🔴 LIVE' : '📺',
                           position: 'insideTopLeft',
@@ -813,6 +868,7 @@ export default function StatsPage() {
                         fill={COLORS[marker.platform]}
                         stroke="#fff"
                         strokeWidth={2}
+                        ifOverflow="visible"
                         label={{
                           value: `${marker.value.toLocaleString()}`,
                           position: 'top',
