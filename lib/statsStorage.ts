@@ -390,58 +390,32 @@ export async function getStatsTimeSeries(
       return [];
     }
 
-    // Group by hour
+    // Group by hour in UTC - client will handle timezone conversion for display
     const grouped: Record<number, number[]> = {};
 
     for (const snapshot of history) {
-      const hour = Math.floor(snapshot.timestamp / (60 * 60 * 1000));
-      if (!grouped[hour]) grouped[hour] = [];
-      grouped[hour].push(snapshot.count);
+      // Round to nearest hour boundary for grouping
+      const hourTimestamp = Math.floor(snapshot.timestamp / (60 * 60 * 1000)) * (60 * 60 * 1000);
+      if (!grouped[hourTimestamp]) grouped[hourTimestamp] = [];
+      grouped[hourTimestamp].push(snapshot.count);
     }
 
     console.log(`[getStatsTimeSeries] ${platform}: Grouped into ${Object.keys(grouped).length} hours`);
 
     // Create time series with average for each hour
     const timeSeries = Object.entries(grouped)
-      .map(([hourKey, counts]) => {
-        const hour = parseInt(hourKey);
-        const timestamp = hour * 60 * 60 * 1000;
-        const date = new Date(timestamp);
+      .map(([timestampKey, counts]) => {
+        const timestamp = parseInt(timestampKey);
         const avgCount = Math.round(
           counts.reduce((a, b) => a + b, 0) / counts.length
         );
 
-        // Format time more reliably
-        let timeStr = '';
-        if (timeRange === 'day') {
-          // For day view: show HH:MM format
-          timeStr = date.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true
-          });
-        } else if (timeRange === 'week') {
-          // For week view: show day name and time
-          timeStr = date.toLocaleDateString('en-US', {
-            weekday: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          });
-        } else {
-          // For month view: show date only
-          timeStr = date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-        }
-
+        // Return timestamp only - time formatting will be done on client side
+        // to use browser's timezone instead of server's timezone
         return {
           timestamp,
           count: avgCount,
-          time: timeStr,
+          time: timestamp.toString(), // Temporary placeholder, will be formatted on client
         };
       })
       .sort((a, b) => a.timestamp - b.timestamp);

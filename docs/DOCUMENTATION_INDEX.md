@@ -124,6 +124,7 @@ This guide helps you navigate all documentation for the FesiStats project.
 - [⚡ Optimization Integration](./OPTIMIZATION_INTEGRATION.md)
 - [⚙️ Quick Reference](./STATS_CALLS_QUICK_REFERENCE.md)
 - [🏗️ Fetchers Module Structure](./FETCHERS_MODULE_STRUCTURE.md)
+- [📺 Stream Tracking](./STREAM_TRACKING.md) ← YouTube stream visualization
 
 ### API Integration
 - [🎬 YouTube API Setup](./YOUTUBE_API_SETUP.md)

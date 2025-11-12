@@ -1,5 +1,177 @@
 # Changelog
 
+## Version 3.5.0 - Enhanced Statistics Visualization & Timezone Fixes
+
+### 🎉 New Features
+
+#### Stream Markers on Charts
+- **YouTube Live Stream Visualization**: Streams now appear directly on statistics charts
+- **Shaded Areas**: Completed streams shown as red-tinted shaded regions
+- **Live Stream Indicators**: Ongoing streams displayed with vertical dashed lines and 🔴 LIVE label
+- **Exact Timing**: Stream markers use exact stream start/end times, not rounded to hourly data
+- **Tooltips**: Hover over chart to see stream details (title, duration, subscriber change)
+- **Interpolation**: Creates data points at exact stream times with averaged stats for accuracy
+- **Badge Counters**: Header shows count of streams and milestones visible on chart
+
+#### Time Range Support
+- **Multiple Views**: Stream markers work across all time ranges (24 hours, 7 days, 30 days)
+- **Smart Formatting**: Time display adapts to selected range (hour-only, day+time, date+time)
+- **Timezone Aware**: All times display in user's browser timezone
+- **Responsive**: Stream shaded areas and markers adjust with zoom and pan
+
+#### Enhanced Milestone Markers
+- **Visible Icons**: Milestone achievements shown as colored dots on chart
+- **Platform Colors**: Each platform's milestones use its brand color
+- **Smart Positioning**: Markers find exact chart coordinates by timestamp matching
+- **Count Labels**: Shows follower count above each milestone marker
+- **Legend**: Helpful explanation of milestone markers in chart footer
+
+### 🐛 Critical Bug Fixes
+
+#### Timezone Architecture Fix
+- **Problem**: Stats times were off by 7 hours (server UTC vs client browser timezone)
+- **Root Cause**: Server-side time formatting in statsStorage.ts used UTC, client used local time
+- **Solution**: Migrated ALL time formatting to client-side using browser's timezone
+- **Files Changed**:
+  - `lib/statsStorage.ts`: Changed from server-side formatting to raw timestamps
+  - `app/stats/page.tsx`: Added client-side formatTime() helper function
+- **Impact**: All times now display correctly in user's timezone (e.g., GMT+0330 for Iran)
+
+#### Stream Marker Rendering Fix
+- **24-Hour View Issue**: Streams not visible in day view due to time format mismatch
+- **Problem**: Stream times formatted as "Sun 8:14 PM" but chart used "08:14 PM"
+- **Solution**: Updated formatStreamTime() to match chart's time formatting logic
+- **Result**: Stream markers now render correctly across all time ranges
+
+#### Milestone Marker Coordinate Matching
+- **Issue**: Milestone markers not appearing after stream interpolation added points
+- **Problem**: Markers used formatted time strings that didn't match after data changes
+- **Solution**: Find chart points by timestamp (unique identifier) instead of time string
+- **Code**: `const chartPoint = chartData.find(p => p.timestamp === marker.timestamp)`
+- **Result**: Milestone markers always visible and correctly positioned
+
+### 🔧 Performance & Data Collection
+
+#### External Cron Setup (Recommended)
+- **30-Minute Intervals**: Stats now collected every 30 minutes via cron-job.org
+- **Improved Accuracy**: Reduces gap between events and data recording
+- **Before**: Stats could be 3+ hours delayed (only on page visits or 3-hour cron)
+- **After**: Maximum 30-minute delay between actual events and chart display
+- **Setup**: Added cron-job.org service pinging `/api/check-milestones` every 30 minutes
+
+#### Vercel Cron Enhancement
+- **Increased Frequency**: Changed from daily to every 3 hours
+- **Configuration**: `vercel.json` schedule updated to `"0 */3 * * *"`
+- **Backup Layer**: Provides secondary data collection when external cron active
+- **Impact**: 8 data points per day instead of 1 (minimum)
+
+### 🎨 UI/UX Improvements
+
+#### Badge Layout Redesign
+- **Side-by-Side**: Stream and milestone badges now appear together in header
+- **Flex Container**: Used `flex items-center gap-2` for proper spacing
+- **Visual Hierarchy**: Moved from scattered placement to organized group
+- **Consistency**: Both badges styled similarly with icon + count format
+
+#### Stream Information Display
+- **Legend Section**: Added "Shaded red areas" explanation below chart
+- **Tooltip Details**: Shows stream title, duration, start/end times, subscriber change
+- **Visual Feedback**: Hover effects on all interactive elements
+- **Color Coding**: Red for streams, pink for milestones, platform colors for lines
+
+### 📊 Technical Implementation
+
+#### Stream Interpolation Algorithm
+```typescript
+// Creates exact stream time points with averaged stats
+const interpolatePoint = (timestamp, time) => {
+  // Find surrounding chart points
+  // Calculate interpolation ratio
+  // Average YouTube/Telegram/Instagram values
+  // Return new data point at exact stream time
+}
+```
+
+#### Timezone-Aware Formatting
+```typescript
+// Client-side formatting respecting browser timezone
+const formatTime = (timestamp, timeRange) => {
+  if (timeRange === 'day') {
+    return toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  } else if (timeRange === 'week') {
+    return toLocaleDateString('en-US', { weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
+  } else {
+    return toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+}
+```
+
+### 📝 Files Modified
+```
+app/stats/page.tsx                 # Stream markers, timezone fixes, badge layout
+lib/statsStorage.ts                # Removed server-side formatting
+vercel.json                        # Increased cron frequency to 3 hours
+CHANGELOG.md                       # This file
+```
+
+### 🔍 Debugging Features (Temporary)
+- Added comprehensive console logging during development
+- Tracked stream marker creation and rendering
+- Verified timezone conversions with actual timestamps
+- Confirmed chart coordinate matching
+- All debug logging removed in final version
+
+### 🚀 Data Flow Improvements
+
+**Before:**
+```
+Stats saved when API called (page visit or daily cron)
+  ↓ 
+Up to 24+ hour delays possible
+  ↓
+Chart shows when data COLLECTED, not when events occurred
+```
+
+**After:**
+```
+External cron → API every 30 minutes
+  +
+Vercel cron → API every 3 hours (backup)
+  +
+Page visits → API on demand
+  ↓
+Maximum 30-minute delay
+  ↓
+Chart shows near-real-time event timing
+```
+
+### 📖 Documentation Updates
+- Updated `.copilot-instructions.md` with timezone architecture details
+- Documented stream interpolation algorithm
+- Added data collection limitation explanation
+- Included external cron setup recommendations
+
+### 🎯 Current Feature Status
+- ✅ **YouTube**: Live data with streams visualization
+- ✅ **Telegram**: Live stats + Bot notifications + Subscriber management
+- ✅ **Instagram**: Live data with internal API
+- ✅ **Admin Panel**: Full control dashboard with subscriber management
+- ✅ **Automated Milestones**: Real-time detection with 30-min cron
+- ✅ **Multi-Language**: English + Persian support
+- ✅ **Statistics Dashboard**: Multi-platform trends with stream markers
+- ✅ **Timezone Support**: Accurate display in user's local timezone
+- ✅ **Stream Tracking**: Visual stream history on growth charts
+
+### 🔄 Breaking Changes
+- None - all changes are additive or fix existing issues
+
+### 🐛 Known Limitations
+- Stats show when data was COLLECTED, not when events occurred (by design)
+- Chart granularity depends on cron frequency (30 minutes with external service)
+- Vercel Hobby plan limits cron to 3-hour minimum (external service recommended)
+
+---
+
 ## Version 3.4.0 - Subscriber Management System
 
 ### 🎉 New Features

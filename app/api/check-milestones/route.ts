@@ -3,6 +3,7 @@ import { getSubscribers } from '@/lib/telegramSubscribers';
 import { detectMilestone, generateMilestoneMessage, shouldNotifyMilestone, findLastPassedMilestone } from '@/lib/milestones';
 import { getLastNotifiedMilestone, setLastNotifiedMilestone } from '@/lib/milestoneStorage';
 import { fetchAndSaveAllStats, type FetchedStats } from '@/lib/fetchers';
+import { fetchYouTubeStreams } from '@/lib/fetchers/youtube-streams';
 
 async function sendTelegramBroadcast(message: string): Promise<{ total: number; successful: number; failed: number }> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -51,6 +52,14 @@ export async function GET() {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://itzfesi.ir';
     
     const stats = await fetchPlatformStats();
+    
+    // Fetch YouTube streams in background (non-blocking, uses cache)
+    // This piggybacks on the milestone check without adding delay
+    fetchYouTubeStreams(false).catch(err => {
+      console.warn('⚠️  Background stream fetch failed:', err);
+      // Don't fail the whole request if stream fetch fails
+    });
+    
     const notifications: Array<{ platform: string; milestone: string; delivered: number }> = [];
     const currentStats: Array<{ 
       platform: string; 
