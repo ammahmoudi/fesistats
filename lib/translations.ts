@@ -6,8 +6,8 @@ export const translations = {
     success: "Success",
     live: "Live",
     demo: "Demo",
-    back: "← Back",
-    backToHome: "← Back to Home",
+    back: "Back",
+    backToHome: "Back to Home",
     refresh: "Refresh",
     lastUpdated: "Last updated:",
     
@@ -76,7 +76,7 @@ export const translations = {
     loginSuccess: "Login successful!",
     loginError: "Invalid token",
     logout: "Logout",
-    backToDashboard: "← Back to Dashboard",
+    backToDashboard: "Back to Dashboard",
     
     // Admin Dashboard
     dashboardTitle: "Admin Dashboard",
@@ -280,8 +280,8 @@ export const translations = {
     success: "موفق",
     live: "زنده",
     demo: "نمایشی",
-    back: "← بازگشت",
-    backToHome: "← بازگشت به خانه",
+    back: "بازگشت",
+    backToHome: "بازگشت به خانه",
     refresh: "بروزرسانی",
     lastUpdated: "آخرین بروزرسانی:",
     
@@ -350,7 +350,7 @@ export const translations = {
     loginSuccess: "ورود موفق!",
     loginError: "توکن نامعتبر",
     logout: "خروج",
-    backToDashboard: "← بازگشت به داشبورد",
+    backToDashboard: "بازگشت به داشبورد",
     
     // Admin Dashboard
     dashboardTitle: "داشبورد مدیریت",
