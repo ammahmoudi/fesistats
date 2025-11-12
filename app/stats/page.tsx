@@ -262,23 +262,28 @@ export default function StatsPage() {
           hour: '2-digit', 
           minute: '2-digit',
           hour12: true
-        });
+        }).replace(/^0/, ''); // Remove leading zero
       } else if (timeRange === 'week') {
         // For week view: show day name and time
-        return date.toLocaleDateString('en-US', {
-          weekday: 'short',
+        const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const time = date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, ''); // Remove leading zero
+        return `${day} ${time}`;
+      } else {
+        // For month view: show date and time
+        const monthDay = date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
+        const time = date.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
           hour12: true
-        });
-      } else {
-        // For month view: show date and time
-        return date.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+        }).replace(/^0/, '');
+        return `${monthDay}, ${time}`;
       }
     };
     
@@ -302,7 +307,137 @@ export default function StatsPage() {
     });
   };
 
-  const chartData = buildChartData();
+  // Build chart data and add stream interpolation points
+  const buildChartDataWithStreams = () => {
+    let data = buildChartData();
+    if (!data.length || !streams.length || !stats.length) return data;
+    
+    console.log(`📊 Building chart with streams for timeRange: ${timeRange}`);
+    console.log(`📊 Initial chart data points: ${data.length}`);
+    console.log(`📊 Sample chart times:`, data.slice(0, 3).map(d => d.time));
+    
+    const chartStartTime = stats[0]?.history[0]?.timestamp || 0;
+    const chartEndTime = stats[0]?.history[stats[0].history.length - 1]?.timestamp || Date.now();
+
+    // Helper function to interpolate data between two chart points
+    const interpolatePoint = (timestamp: number, time: string) => {
+      // Find surrounding points
+      let beforePoint = data[0];
+      let afterPoint = data[data.length - 1];
+      
+      for (let i = 0; i < data.length - 1; i++) {
+        if (data[i].timestamp <= timestamp && data[i + 1].timestamp >= timestamp) {
+          beforePoint = data[i];
+          afterPoint = data[i + 1];
+          break;
+        }
+      }
+      
+      // If exact match, return that point
+      if (beforePoint.timestamp === timestamp) return { ...beforePoint, time };
+      if (afterPoint.timestamp === timestamp) return { ...afterPoint, time };
+      
+      // Interpolate between points
+      const range = afterPoint.timestamp - beforePoint.timestamp;
+      const position = timestamp - beforePoint.timestamp;
+      const ratio = range > 0 ? position / range : 0.5;
+      
+      return {
+        time,
+        timestamp,
+        YouTube: Math.round((beforePoint.YouTube || 0) * (1 - ratio) + (afterPoint.YouTube || 0) * ratio),
+        Telegram: Math.round((beforePoint.Telegram || 0) * (1 - ratio) + (afterPoint.Telegram || 0) * ratio),
+        Instagram: Math.round((beforePoint.Instagram || 0) * (1 - ratio) + (afterPoint.Instagram || 0) * ratio),
+      };
+    };
+    
+    // Format time for stream points - must match chart's formatTime logic
+    const formatStreamTime = (timestamp: number) => {
+      const date = new Date(timestamp);
+      
+      if (timeRange === 'day') {
+        // For day view: show HH:MM format (matches buildChartData)
+        return date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, ''); // Remove leading zero if present
+      } else if (timeRange === 'week') {
+        // For week view: show day name and time - EXACT same format as formatTime
+        const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const time = date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, ''); // Remove leading zero
+        return `${day} ${time}`;
+      } else {
+        // For month view: show date and time
+        const monthDay = date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
+        const time = date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, '');
+        return `${monthDay}, ${time}`;
+      }
+    };
+
+    // Add interpolated points for each stream
+    streams.forEach((stream) => {
+      // Check if stream overlaps with chart time range
+      const streamEnd = stream.endTime || Date.now();
+      const overlaps = (stream.startTime >= chartStartTime && stream.startTime <= chartEndTime) ||
+                       (streamEnd >= chartStartTime && streamEnd <= chartEndTime);
+      
+      if (!overlaps) return;
+      
+      // Create start and end points
+      const startTime = formatStreamTime(stream.startTime);
+      const startPoint = interpolatePoint(stream.startTime, startTime);
+      
+      console.log(`   🎬 Stream: "${stream.title.substring(0, 30)}"`);
+      console.log(`      Start time formatted: "${startTime}"`);
+      console.log(`      Start timestamp: ${stream.startTime}`);
+      
+      // Add start point if not already exists
+      if (!data.find(p => p.time === startTime)) {
+        data.push(startPoint);
+        console.log(`      ✅ Added start point`);
+      } else {
+        console.log(`      ⚠️  Start point already exists`);
+      }
+      
+      // Add end point if stream has ended
+      if (stream.endTime) {
+        const endTime = formatStreamTime(stream.endTime);
+        const endPoint = interpolatePoint(stream.endTime, endTime);
+        
+        console.log(`      End time formatted: "${endTime}"`);
+        console.log(`      End timestamp: ${stream.endTime}`);
+        
+        if (!data.find(p => p.time === endTime)) {
+          data.push(endPoint);
+          console.log(`      ✅ Added end point`);
+        } else {
+          console.log(`      ⚠️  End point already exists`);
+        }
+      }
+    });
+
+    // Sort by timestamp after adding stream points
+    data.sort((a, b) => a.timestamp - b.timestamp);
+    
+    console.log(`📊 Final chart data points: ${data.length}`);
+    console.log(`📊 Sample final times:`, data.slice(0, 3).map(d => d.time));
+    
+    return data;
+  };
+
+  const chartData = buildChartDataWithStreams();
   
   // Get growth for each platform
   const getGrowth = (platform: string) => {
@@ -392,6 +527,10 @@ export default function StatsPage() {
 
   // Get stream markers for the chart
   const getStreamMarkers = () => {
+    console.log('🔍 getStreamMarkers called');
+    console.log('🔍 chartData length:', chartData.length);
+    console.log('🔍 chartData sample times:', chartData.slice(0, 5).map(d => d.time));
+    
     if (!chartData.length || !streams.length || !stats.length) return [];
     
     const markers: Array<{
@@ -410,7 +549,39 @@ export default function StatsPage() {
     const chartStartTime = stats[0]?.history[0]?.timestamp || 0;
     const chartEndTime = stats[0]?.history[stats[0].history.length - 1]?.timestamp || Date.now();
 
-    streams.forEach((stream, idx) => {
+    // Format time for stream markers - must match chart's formatTime logic
+    const formatStreamTime = (timestamp: number) => {
+      const date = new Date(timestamp);
+      
+      if (timeRange === 'day') {
+        return date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, ''); // Remove leading zero
+      } else if (timeRange === 'week') {
+        const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const time = date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, ''); // Remove leading zero
+        return `${day} ${time}`;
+      } else {
+        const monthDay = date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
+        const time = date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }).replace(/^0/, '');
+        return `${monthDay}, ${time}`;
+      }
+    };
+
+    streams.forEach((stream) => {
       // Check if stream overlaps with chart time range
       const streamEnd = stream.endTime || Date.now();
       const overlaps = (stream.startTime >= chartStartTime && stream.startTime <= chartEndTime) ||
@@ -418,84 +589,23 @@ export default function StatsPage() {
       
       if (!overlaps) return;
       
-      // Create interpolated points for stream start and end times
-      // This allows exact stream timing without being limited to hourly data points
+      console.log(`📺 Creating marker for stream: "${stream.title.substring(0, 30)}"`);
       
-      // Helper function to interpolate data between two chart points
-      const interpolatePoint = (timestamp: number, time: string) => {
-        // Find surrounding points
-        let beforePoint = chartData[0];
-        let afterPoint = chartData[chartData.length - 1];
-        
-        for (let i = 0; i < chartData.length - 1; i++) {
-          if (chartData[i].timestamp <= timestamp && chartData[i + 1].timestamp >= timestamp) {
-            beforePoint = chartData[i];
-            afterPoint = chartData[i + 1];
-            break;
-          }
-        }
-        
-        // If exact match, return that point
-        if (beforePoint.timestamp === timestamp) return { ...beforePoint, time };
-        if (afterPoint.timestamp === timestamp) return { ...afterPoint, time };
-        
-        // Interpolate between points
-        const range = afterPoint.timestamp - beforePoint.timestamp;
-        const position = timestamp - beforePoint.timestamp;
-        const ratio = range > 0 ? position / range : 0.5;
-        
-        return {
-          time,
-          timestamp,
-          YouTube: Math.round((beforePoint.YouTube || 0) * (1 - ratio) + (afterPoint.YouTube || 0) * ratio),
-          Telegram: Math.round((beforePoint.Telegram || 0) * (1 - ratio) + (afterPoint.Telegram || 0) * ratio),
-          Instagram: Math.round((beforePoint.Instagram || 0) * (1 - ratio) + (afterPoint.Instagram || 0) * ratio),
-        };
-      };
-      
-      // Format time for stream points - must match chart's formatTime logic
-      const formatStreamTime = (timestamp: number) => {
-        const date = new Date(timestamp);
-        
-        if (timeRange === 'day') {
-          // For day view: show HH:MM format (matches buildChartData)
-          return date.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true
-          });
-        } else if (timeRange === 'week') {
-          // For week view: show day name and time
-          return date.toLocaleDateString('en-US', {
-            weekday: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          });
-        } else {
-          // For month view: show date and time
-          return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-        }
-      };
-      
-      // Create start and end points
+      // Get formatted times
       const startTime = formatStreamTime(stream.startTime);
-      const startPoint = interpolatePoint(stream.startTime, startTime);
+      const endTime = stream.endTime ? formatStreamTime(stream.endTime) : undefined;
       
-      let endPoint;
-      let endTime;
-      if (stream.endTime) {
-        endTime = formatStreamTime(stream.endTime);
-        endPoint = interpolatePoint(stream.endTime, endTime);
-      }
+      console.log(`   Start time: "${startTime}"`);
+      if (endTime) console.log(`   End time: "${endTime}"`);
       
-      // Calculate subscriber change during stream (YouTube platform)
-      const startYouTube = startPoint.YouTube || 0;
+      // Find corresponding chart points to get YouTube subscriber counts
+      const startPoint = chartData.find(p => p.time === startTime);
+      const endPoint = endTime ? chartData.find(p => p.time === endTime) : null;
+      
+      console.log(`   Found start point: ${!!startPoint}`);
+      if (endTime) console.log(`   Found end point: ${!!endPoint}`);
+      
+      const startYouTube = startPoint?.YouTube || 0;
       const endYouTube = endPoint?.YouTube || startYouTube;
       const subscriberChange = endYouTube - startYouTube;
       
@@ -505,9 +615,9 @@ export default function StatsPage() {
       const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
       const durationStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
       
-      const marker = {
-        startTime: startTime,
-        endTime: endTime,
+      markers.push({
+        startTime,
+        endTime,
         startTimestamp: stream.startTime,
         endTimestamp: stream.endTime,
         title: stream.title,
@@ -516,26 +626,29 @@ export default function StatsPage() {
         subscriberChange,
         startCount: startYouTube,
         endCount: endYouTube,
-      };
-      
-      markers.push(marker);
-      
-      // Add interpolated points to chart data for Recharts to use
-      if (!chartData.find(p => p.time === startTime)) {
-        chartData.push(startPoint);
-      }
-      if (endPoint && endTime && !chartData.find(p => p.time === endTime)) {
-        chartData.push(endPoint);
-      }
+      });
     });
-
-    // Sort chartData by timestamp after adding stream points
-    chartData.sort((a, b) => a.timestamp - b.timestamp);
+    
+    console.log(`📺 Total stream markers created: ${markers.length}`);
+    if (markers.length > 0) {
+      console.log('📺 First marker:', markers[0]);
+    }
     
     return markers;
   };
 
   const streamMarkers = getStreamMarkers();
+  
+  console.log('🎨 About to render with:');
+  console.log('   chartData length:', chartData.length);
+  console.log('   streamMarkers length:', streamMarkers.length);
+  console.log('   milestoneMarkers length:', milestoneMarkers.length);
+  if (streamMarkers.length > 0) {
+    console.log('   First stream marker times:', streamMarkers[0].startTime, '-', streamMarkers[0].endTime);
+  }
+  if (chartData.length > 0) {
+    console.log('   Chart has these exact times:', chartData.map(d => d.time).join(', '));
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -629,7 +742,8 @@ export default function StatsPage() {
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#444" vertical={false} />
                   <XAxis 
-                    dataKey="time" 
+                    dataKey="time"
+                    type="category"
                     stroke="#999"
                     tick={{ fill: "#999", fontSize: 12 }}
                   />
